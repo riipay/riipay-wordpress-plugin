@@ -1,20 +1,8 @@
-=== Riipay for WooCommerce ===
-Contributors: riipay
-Tags: riipay, payment gateway, Malaysia
-Requires at least: 4.7
-Tested up to: 5.4
-Stable tag: 4.3
-Requires PHP: 7.0
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+# Riipay for WooCommerce
 
-Accept payment by using Riipay.
+Accept payment by using Riipay on Woocommerce. Currently available for sandbox testing only.
 
-== Description ==
-
-Install this plugin to start accepting payments using Riipay.
-
-== Installation ==
+## Installation
 
 **Step 1:**
 
@@ -34,24 +22,26 @@ Install this plugin to start accepting payments using Riipay.
   For orders amount exceeding RM100, Riipay will reject payment for the time being until further notice.
 - Save changes
 
-== Frequently Asked Questions ==
+## Frequently Asked Questions
 
-= Where can I get Secret Key? =
+**Q:** Where can I get Secret Key?
 
-You can retrieve the Secret Key at your Riipay Portal Profile Section.
+**A:** You can retrieve the Secret Key at your Riipay Portal Profile Section.
 
-= Where can I get my Merchant Code =
 
-You can retrieve the Merchant Code at your Riipay Portal Profile Section.
+**Q:**  Where can I get my Merchant Code?
 
-= What if I have some other question related to Riipay? =
-Kindly contact Riipay customer service.
+**A:** You can retrieve the Merchant Code at your Riipay Portal Profile Section.
 
-== Screenshots ==
 
-== Changelog ==
+**Q:** What if I have some other question related to Riipay?
 
-= 0.1.0 =
-Initial development.
+**A:** Kindly contact Riipay customer service at contact@riipay.my.
+
+## Contact
+
+Riipay - contact@riipay.my
+
+Project Link: [https://github.com/riipay/riipay-wordpress-plugin](https://github.com/riipay/riipay-wordpress-plugin)
 
 

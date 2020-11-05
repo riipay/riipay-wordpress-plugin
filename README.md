@@ -1,0 +1,1 @@
+# riipay-wordpress-plugin

@@ -9,7 +9,7 @@ class riipay extends WC_Payment_Gateway
     /**
      * Url to Riipay Payment Page when in Production Mode
      */
-    const PRODUCTION_URL = 'https://secure.uat.riipay.my/v1/payment';
+    const PRODUCTION_URL = 'https://secure.riipay.my/v1/payment';
 
 
 

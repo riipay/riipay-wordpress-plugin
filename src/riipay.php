@@ -2,7 +2,13 @@
 
 class riipay extends WC_Payment_Gateway
 {
+    /**
+     * Url to Riipay Payment Page when in Sandbox Mode
+     */
     const SANDBOX_URL = 'https://secure.uat.riipay.my/v1/payment';
+    /**
+     * Url to Riipay Payment Page when in Production Mode
+     */
     const PRODUCTION_URL = 'https://secure.uat.riipay.my/v1/payment';
 
 
@@ -52,7 +58,8 @@ class riipay extends WC_Payment_Gateway
         add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'woo_change_order_received_text' ), 10, 2 );
     }
 
-    public function init_form_fields() {
+    public function init_form_fields()
+    {
         $extra_info_text = 'Please update your details at <a href="https://merchant.uat.riipay.my/profile/update" target="_blank">Riipay Merchant Portal Settings</a>.<br /><br />';
         $extra_info_text .= 'You may use the suggested values as follows: <br />';
         $extra_info_text .= '<b>Return URL</b>: ' . get_home_url() . '<br />';
@@ -128,95 +135,8 @@ class riipay extends WC_Payment_Gateway
         );
     }
 
-    public function process_payment( $order_id ) {
-        $order = new WC_Order( $order_id );
-        $merchant_code = $this->merchant_code;
-        $reference = $order->get_order_number();
-        $description = 'Payment for order ' . $reference;
-        $currency_code = $order->get_currency();
-        $amount = number_format( $order->get_total(), 2, '.', '' );
-        $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
-        $customer_phone = $order->get_billing_phone();
-        $customer_email = $order->get_billing_email();
-        $customer_ip = $order->get_customer_ip_address();
-        $signature = md5($merchant_code . $this->secret_key . $reference . $currency_code . $amount);
-        $return_url = WC()->api_request_url( get_class($this) );
-//         $callback_url = add_query_arg( array( 'is_callback' => true ), $return_url );
-
-        $arguments = array(
-            'merchant_code' => $merchant_code,
-            'reference' => $reference,
-            'description' => $description,
-            'currency_code' => $currency_code,
-            'amount' => $amount,
-            'customer_name' => $customer_name,
-            'customer_email' => $customer_email,
-            'customer_phone' => $customer_phone,
-            'customer_ip' => $customer_ip,
-            'return_url' => $return_url,
-//            'callback_url' => $callback_url,
-            'signature' => $signature,
-        );
-
-        $get_arguments = '';
-        foreach($arguments as $key => $value) {
-            if ($get_arguments !== '') {
-                $get_arguments .= '&';
-            } else {
-                $get_arguments .= '?';
-            }
-
-            $get_arguments .= $key . '=' . $value;
-        }
-
-        return array(
-            'result' => 'success',
-            'redirect' => $this->url . $get_arguments,
-        );
-    }
-
-    public function get_total_amount() {
-        global $woocommerce;
-
-        if ( is_wc_endpoint_url( 'order-pay' ) ) {
-            $order_id = get_query_var('order-pay');
-            $order = new WC_Order( $order_id );
-            $total = $order->get_total();
-        } else {
-            $total = $woocommerce->cart->get_cart_contents_total();
-        }
-
-        return $total;
-    }
-
-    public function get_extra_description() {
-        $html = '';
-
-        if ( is_admin() ) {
-            return $html;
-        }
-
-        $html .= '<p> Pay ';
-        $html .= $this->get_first_payment_value();
-        $html .= ' now. </p>';
-
-        return $html;
-    }
-
-    public function get_first_payment_value() {
-        if ( is_admin() ) {
-            return '';
-        }
-
-        global $woocommerce;
-        $total = $this->get_total_amount();
-        $each_payment = $total / 3;
-        $each_payment = number_format($each_payment, 2);
-
-        return sprintf( '%s %s', get_woocommerce_currency_symbol(), $each_payment );
-    }
-
-    public function is_available() {
+    public function is_available()
+    {
         if ( !$this->validate_admin_input() ) {
             return false;
         }
@@ -243,7 +163,8 @@ class riipay extends WC_Payment_Gateway
         return parent::is_available();
     }
 
-    public function validate_admin_input() {
+    public function validate_admin_input()
+    {
 
         $valid = true;
         if ( empty($this->merchant_code) ) {
@@ -265,22 +186,6 @@ class riipay extends WC_Payment_Gateway
         return $valid;
     }
 
-    public function merchant_code_missing_message() {
-        return $this->key_missing_message('Merchant Code');
-    }
-
-    public function secret_key_missing_message() {
-        return $this->key_missing_message('Secret Key');
-    }
-
-    public function key_missing_message($error_type) {
-        $message = '<div class="error">';
-        $message .= '<p>' . sprintf("<strong>Riipay Disabled</strong> You should set your $error_type in Riipay. %sClick here to configure%s", '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=riipay' ) . '">' .  __( 'Settings', 'riipay' ), '</a>') . '</p>';
-        $message .= '</div>';
-
-        echo $message;
-    }
-
     private function validate_currencies()
     {
         if (!in_array( get_woocommerce_currency(),
@@ -288,7 +193,8 @@ class riipay extends WC_Payment_Gateway
             true) ) {
 
             add_action( 'admin_notices', array(
-                    &$this, 'unsupported_currency_notice')
+                    &$this,
+                    'unsupported_currency_notice')
             );
 
             return false;
@@ -296,36 +202,150 @@ class riipay extends WC_Payment_Gateway
         return true;
     }
 
-    public function unsupported_currency_notice(){
+    public function unsupported_currency_notice()
+    {
         $message = '<div class="error">';
-        $message .= '<p>' . sprintf("<strong>Riipay Disabled</strong> WooCommerce currency option is not supported by Riipay. %sClick here to configure%s", '<a href="' . esc_url(admin_url( 'admin.php?page=wc-settings&tab=checkout&section=riipay' )) . '">' . __( 'Settings', 'riipay' ) . '</a>') . '</p>';
+        $message .= '<p>' . sprintf("<strong>Riipay Disabled</strong> WooCommerce currency option is not supported by Riipay Settings. %sClick here to configure%s", '<a href="' . esc_url(admin_url( 'admin.php?page=wc-settings&tab=checkout&section=riipay' )) . '">',  '</a>') . '</p>';
         $message .= '</div>';
 
         echo $message;
     }
 
-    public function check_response() {
-        $is_callback = strtoupper( $_SERVER['REQUEST_METHOD'] ) == 'POST' ? true : false;
-        $content_type = $_SERVER['HTTP_CONTENT_TYPE'];
+    public function merchant_code_missing_message()
+    {
+        return $this->key_missing_message('Merchant Code');
+    }
 
+    public function secret_key_missing_message()
+    {
+        return $this->key_missing_message('Secret Key');
+    }
 
-        $data = [];
-        if ( !$is_callback ) {
-            $data = $_GET;
-        } elseif ( $is_callback && ( strpos( $content_type, 'application/json' )  !== false ) ) {
-            $json = file_get_contents('php://input');
-            $data = json_decode($json, true);
-        } elseif ( $is_callback ) {
-            $data = $_POST;
+    public function key_missing_message($error_type)
+    {
+        $message = '<div class="error">';
+        $message .= '<p>' . sprintf("<strong>Riipay Disabled</strong> You should set your $error_type in Riipay Settings. %sClick here to configure%s", '<a href="' . esc_url(admin_url( 'admin.php?page=wc-settings&tab=checkout&section=riipay' )) . '">', '</a>') . '</p>';
+        $message .= '</div>';
+
+        echo $message;
+    }
+
+    public function get_extra_description()
+    {
+        $html = '';
+
+        if ( is_admin() ) {
+            return $html;
         }
 
-        $status_code = $data['status_code'];
-        $status_message = $data['status_message'];
-        $signature = $data['signature'];
-        $transaction_reference = $data['transaction_reference'];
-        $reference = $data['reference'];
-        $error_code = $data['error_code'];
-        $error_message = $data['error_message'];
+        $html .= '<p> Pay ';
+        $html .= $this->get_first_payment_value();
+        $html .= ' now. </p>';
+        $html .= '<p>Any undisplayed remainders will be applied to the first repayment amount.</p>';
+
+        return $html;
+    }
+
+    public function get_first_payment_value()
+    {
+        if ( is_admin() ) {
+            return '';
+        }
+
+        global $woocommerce;
+        $total = $this->get_total_amount();
+        $each_payment = $total / 4;
+        $each_payment = number_format($each_payment, 2);
+
+        return sprintf( '%s %s', get_woocommerce_currency_symbol(), $each_payment );
+    }
+
+    public function process_payment( $order_id )
+    {
+        $order = new WC_Order( $order_id );
+        $merchant_code = $this->merchant_code;
+        $reference = $order->get_order_number();
+        $description = 'Payment for order ' . $reference;
+        $currency_code = $order->get_currency();
+        $amount = number_format( $order->get_total(), 2, '.', '' );
+        $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+        $customer_phone = $order->get_billing_phone();
+        $customer_email = $order->get_billing_email();
+        $customer_ip = $order->get_customer_ip_address();
+        $signature = md5($merchant_code . $this->secret_key . $reference . $currency_code . $amount);
+        $return_url = $order->get_checkout_order_received_url();
+        $callback_url = WC()->api_request_url( get_class($this) );
+
+        $arguments = array(
+            'merchant_code' => $merchant_code,
+            'reference' => $reference,
+            'description' => $description,
+            'currency_code' => $currency_code,
+            'amount' => $amount,
+            'customer_name' => $customer_name,
+            'customer_email' => $customer_email,
+            'customer_phone' => $customer_phone,
+            'customer_ip' => $customer_ip,
+            'return_url' => $return_url,
+            'callback_url' => $callback_url,
+            'signature' => $signature,
+        );
+
+        $get_arguments = '';
+        foreach($arguments as $key => $value) {
+            if ($get_arguments !== '') {
+                $get_arguments .= '&';
+            } else {
+                $get_arguments .= '?';
+            }
+
+            $get_arguments .= $key . '=' . $value;
+        }
+
+        return array(
+            'result' => 'success',
+            'redirect' => $this->url . $get_arguments,
+        );
+    }
+
+    public function get_total_amount()
+    {
+        global $woocommerce;
+
+        if ( is_wc_endpoint_url( 'order-pay' ) ) {
+            $order_id = get_query_var('order-pay');
+            $order = new WC_Order( $order_id );
+            $total = $order->get_total();
+        } else {
+            $total = $woocommerce->cart->get_cart_contents_total();
+        }
+
+        return $total;
+    }
+
+    public function check_response()
+    {
+        $is_callback = $_SERVER['REQUEST_URI'] == ('/wc-api/riipay' || '/?wc-api=riipay' ) ? true : false;
+        $method = strtoupper( $_SERVER['REQUEST_METHOD'] );
+        $content_type = $_SERVER['HTTP_CONTENT_TYPE'];
+
+        $data = [];
+        if ( $method == 'GET' ) {
+            $data = $_GET;
+        } elseif ( ( $method == 'POST' ) && ( strpos( $content_type, 'application/json' )  !== false ) ) {
+            $json = file_get_contents('php://input');
+            $data = json_decode($json, true);
+        } elseif ( $method == 'POST' ) {
+            $data = stripslashes_deep( $_POST );
+        }
+
+        $status_code = trim( sanitize_text_field( $data['status_code'] ) );
+        $status_message = trim( sanitize_text_field( $data['status_message'] ) );
+        $signature = trim( sanitize_text_field( $data['signature'] ) );
+        $transaction_reference = trim( sanitize_text_field( $data['transaction_reference'] ) );
+        $reference = trim( sanitize_text_field( $data['reference'] ) );
+        $error_code = trim( sanitize_text_field( $data['error_code'] ) );
+        $error_message = trim( sanitize_text_field( $data['error_message'] ) );
 
         $order = new WC_Order( $reference );
         $merchant_code = $this->merchant_code;
@@ -338,18 +358,23 @@ class riipay extends WC_Payment_Gateway
         $order_signature = md5($merchant_code . $secret_key . $order_reference . $currency_code . $amount . $transaction_reference . $status_code);
 
         $valid = $order_signature === $signature;
+
         if ( !$valid ) {
             $order->update_status( 'failed' );
-            $order->add_order_note( __(  $error_code . ': ' . $error_message , 'riipay' ), 1 );
+            $order->add_order_note( __(  sprintf('Invalid Signature: %s. Expected: %s', $signature, $order_signature) , 'riipay' ), 1 );
 
-            wc_add_notice(__('Please choose a valid payment method to proceed', 'riipay'), 'error');
+            if ( !$is_callback ) {
+                wc_add_notice(__('Invalid Signature. Please choose a valid payment method to proceed', 'riipay'), 'error');
+                wp_redirect( $order->get_checkout_payment_url() );
+            }
+
             exit();
         }
 
         $note = $status_message . sprintf(' [%s]', $transaction_reference );
 
-        if ( in_array( strtolower($order_status), array( 'pending', 'failed', 'on-hold' ) ) ) {
-            if ( $status_code == 'F' ) {
+        if ( in_array( strtolower($order_status), array( 'pending', 'failed', 'on-hold', 'unpaid' ) ) ) {
+            if ( $status_code == 'F') {
                 $order->update_status( 'failed', __(  $note , 'riipay' ), 1 );
                 $order->add_order_note( __( $error_code . ': ' . $error_message, 'riipay'), 1 );
             } elseif ( $status_code == 'A' ) {
@@ -369,12 +394,20 @@ class riipay extends WC_Payment_Gateway
         exit();
     }
 
-    public function woo_change_order_received_text( $text, $order) {
+    public function woo_change_order_received_text( $text, $order)
+    {
         if ( $order->has_status( 'on-hold' ) ) {
             $new_text = $text;
             $new_text .= '<br />You current order status is On Hold. Please note that the payment status will take some time to update.';
             return $new_text;
+        } elseif ( $order->has_status( 'pending' ) || $order->has_status( 'unpaid' ) ) {
+            $new_text = $text;
+            $new_text .= '<br />Kindly make payment so that we can process your order as soon as possible.';
+            $new_text .= '<br/>';
+            $new_text .= sprintf( '<a href="%s" class="button pay">Pay</a>', $order->get_checkout_payment_url() );
+            return $new_text;
         }
+
         return $text;
     }
 }

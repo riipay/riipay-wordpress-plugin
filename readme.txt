@@ -13,6 +13,8 @@ Accept payment by using Riipay.
 == Description ==
 
 Install this plugin to start accepting payments using Riipay.
+Customers will be able to view Riipay as one of the payment options during checkout.
+They will be redirected to Riipay payment page once they choose to pay with Riipay.
 
 == Installation ==
 
@@ -38,19 +40,22 @@ Install this plugin to start accepting payments using Riipay.
 
 = Where can I get Secret Key? =
 
-You can retrieve the Secret Key at your Riipay Portal Profile Section.
+You can retrieve the Secret Key at your Riipay Merchant Portal Profile Section.
 
 = Where can I get my Merchant Code =
 
-You can retrieve the Merchant Code at your Riipay Portal Profile Section.
+You can retrieve the Merchant Code at your Riipay Merchant Portal Profile Section.
 
 = What if I have some other question related to Riipay? =
-Kindly contact Riipay customer service.
+Kindly contact Riipay customer service at contact@riipay.my.
 
 == Screenshots ==
 
 == Changelog ==
 
 = 0.1.0 =
-Initial development.
+Beta version for sandbox testing.
+
+== Links ==
+Use [Riipay](https://riipay.my) to provide 0% instalment payment plan for your customers today!
 

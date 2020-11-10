@@ -1,6 +1,6 @@
 === Riipay for WooCommerce ===
 Contributors: riipay
-Tags: riipay, payment gateway, Malaysia, ecommerce
+Tags: riipay, payment gateway, Malaysia, ecommerce, woocommerce
 Requires at least: 4.4
 Tested up to: 5.5
 License: GPLv2 or later

@@ -14,6 +14,7 @@ Riipay for WooCommerce allows you to securely provide zero-interest instalments 
 
 Your customers can now connect to Riipay on a click of a button during checkout!
 
+Currently available for sandbox testing only.
 
 == Installation ==
 

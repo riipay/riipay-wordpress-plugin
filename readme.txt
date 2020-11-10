@@ -1,20 +1,19 @@
 === Riipay for WooCommerce ===
 Contributors: riipay
-Tags: riipay, payment gateway, Malaysia
-Requires at least: 4.7
-Tested up to: 5.4
-Stable tag: 4.3
-Requires PHP: 7.0
+Tags: riipay, payment gateway, Malaysia, ecommerce
+Requires at least: 4.4
+Tested up to: 5.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Accept payment by using Riipay.
+Provide a better payment experience with easy, seamless, zero-interest instalments on your WooCommerce store.
 
 == Description ==
 
-Install this plugin to start accepting payments using Riipay.
-Customers will be able to view Riipay as one of the payment options during checkout.
-They will be redirected to Riipay payment page once they choose to pay with Riipay.
+Riipay for WooCommerce allows you to securely provide zero-interest instalments with debit or credit cards on your WooCommerce store for free.
+
+Your customers can now connect to Riipay on a click of a button during checkout!
+
 
 == Installation ==
 

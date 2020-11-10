@@ -5,9 +5,8 @@
  * Version: 0.1.0
  * Author: Riipay
  * Author URI: https://riipay.my
- * Requires PHP: 7.0
- * Requires at least: 4.7
- * WC requires at least: 3.0
+ * WC requires at least: 3.2
+ * WC tested up to: 4.6.2
  */
 
 defined( 'ABSPATH' ) || exit;

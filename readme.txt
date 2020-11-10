@@ -2,7 +2,7 @@
 Contributors: riipay
 Tags: riipay, payment gateway, Malaysia, ecommerce, woocommerce
 Requires at least: 4.4
-Tested up to: 5.5
+Tested up to: 5.5.3
 Stable tag: 0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -15,7 +15,7 @@ Riipay for WooCommerce allows you to securely provide zero-interest instalments 
 
 Your customers can now connect to Riipay on a click of a button during checkout!
 
-Currently available for sandbox testing only.
+Currently riipay service is only available for sandbox testing.
 
 == Installation ==
 

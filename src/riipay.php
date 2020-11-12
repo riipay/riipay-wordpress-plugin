@@ -62,8 +62,11 @@ class riipay extends WC_Payment_Gateway
     {
         $extra_info_text = 'Please update your details at <a href="https://merchant.uat.riipay.my/profile/update" target="_blank">Riipay Merchant Portal Settings</a>.<br /><br />';
         $extra_info_text .= 'You may use the suggested values as follows: <br />';
-        $extra_info_text .= '<b>Return URL</b>: ' . get_home_url() . '<br />';
-        $extra_info_text .= '<b>Callback URL</b>: ' . home_url( '/' ) . 'wc-api/' . $this->id ;
+
+        $return_url = home_url( '/' ) . 'wc-api/' . $this->id;
+        $callback_url = add_query_arg( array( 'callback' => 1 ), $return_url );
+        $extra_info_text .= '<b>Return URL</b>: ' . $return_url  . '<br />';
+        $extra_info_text .= '<b>Callback URL</b>: ' .  $callback_url;
 
         $this->form_fields = array(
             'enabled' => array(
@@ -254,7 +257,7 @@ class riipay extends WC_Payment_Gateway
 
         global $woocommerce;
         $total = $this->get_total_amount();
-        $each_payment = $total / 4;
+        $each_payment = $total / 3;
         $each_payment = number_format($each_payment, 2);
 
         return sprintf( '%s %s', get_woocommerce_currency_symbol(), $each_payment );
@@ -273,8 +276,8 @@ class riipay extends WC_Payment_Gateway
         $customer_email = $order->get_billing_email();
         $customer_ip = $order->get_customer_ip_address();
         $signature = md5($merchant_code . $this->secret_key . $reference . $currency_code . $amount);
-        $return_url = $order->get_checkout_order_received_url();
-        $callback_url = WC()->api_request_url( get_class($this) );
+        $return_url = WC()->api_request_url( get_class($this) );
+        $callback_url = add_query_arg( array('callback' => 1), $return_url );
 
         $arguments = array(
             'merchant_code' => $merchant_code,
@@ -325,7 +328,7 @@ class riipay extends WC_Payment_Gateway
 
     public function check_response()
     {
-        $is_callback = $_SERVER['REQUEST_URI'] == ('/wc-api/riipay' || '/?wc-api=riipay' ) ? true : false;
+        $is_callback = $_REQUEST['callback'] == 1 ? true : false;
         $method = strtoupper( $_SERVER['REQUEST_METHOD'] );
         $content_type = $_SERVER['HTTP_CONTENT_TYPE'];
 

@@ -21,8 +21,7 @@ class riipay extends WC_Payment_Gateway
         $this->method_title = __( 'riipay', 'riipay' );
         $this->method_description = __( 'Riipay Payment Gateway Plugin for WooCommerce', 'riipay' );
         $this->has_fields = false;
-        $icon_path = plugin_dir_url( __FILE__ ) . '../assets/logo-small.png';
-        $this->icon = $icon_path;
+        $this->icon = 'https://d3pv8fjwcfshvi.cloudfront.net/public/icons/android-icon-48x48.png';
 
         $this->title = __( 'riipay', 'riipay' );
 

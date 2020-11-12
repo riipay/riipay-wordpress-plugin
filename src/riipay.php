@@ -54,7 +54,8 @@ class riipay extends WC_Payment_Gateway
 
     public function init_form_fields()
     {
-        $extra_info_text = 'Please update your details at <a href="https://merchant.uat.riipay.my/profile/update" target="_blank">Riipay Merchant Portal Settings</a>.<br /><br />';
+        $extra_info_text = 'For Production Environment, please update your details at <a href="https://merchant.uat.riipay.my/profile/update" target="_blank">Riipay Merchant Portal Settings</a>.<br />';
+        $extra_info_text .= 'For Sandbox Environment, please update your details at <a href="https://merchant.uat.riipay.my/profile/update" target="_blank">Riipay Sandbox Merchant Portal Settings</a>.<br /><br />';
         $extra_info_text .= 'You may use the suggested values as follows: <br />';
 
         $return_url = home_url( '/' ) . 'wc-api/' . $this->id;

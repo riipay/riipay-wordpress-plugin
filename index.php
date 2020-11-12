@@ -6,7 +6,7 @@
  * Author: Riipay
  * Author URI: https://riipay.my
  * WC requires at least: 3.2
- * WC tested up to: 4.6.2
+ * WC tested up to: 4.7
  */
 
 defined( 'ABSPATH' ) || exit;

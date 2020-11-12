@@ -15,8 +15,6 @@ Riipay for WooCommerce allows you to securely provide zero-interest instalments 
 
 Your customers can now connect to Riipay on a click of a button during checkout!
 
-Currently riipay service is only available for sandbox testing.
-
 == Installation ==
 
 **Step 1:**
@@ -34,7 +32,7 @@ Currently riipay service is only available for sandbox testing.
 - Navigate to **WooCommerce >> Settings >> Checkout >> Riipay**
 - Insert your **Merchant Code** and **Secret Key**
 - Modify your **Minimum Order Amount** and **Maximum Order Amount** as desired. By default the minimum order amount is RM0, whereas the maximum order amount if RM1000.
-  For orders amount exceeding RM100, Riipay will reject payment for the time being until further notice.
+  For orders amount exceeding RM1000, Riipay will reject payment for the time being until further notice.
 - Save changes
 
 == Frequently Asked Questions ==

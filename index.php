@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Riipay for Woocommerce
- * Description: Enable online payments using credit or debit cards and online banking. Currently riipay service is only available for sandbox testing.
+ * Description: Start accepting payments with zero-interest instalments using credit or debit cards now!
  * Version: 0.1.0
  * Author: Riipay
  * Author URI: https://riipay.my

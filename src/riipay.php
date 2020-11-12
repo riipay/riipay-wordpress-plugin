@@ -232,6 +232,34 @@ class riipay extends WC_Payment_Gateway
         echo $message;
     }
 
+    public function get_total_amount()
+    {
+        global $woocommerce;
+
+        if ( is_wc_endpoint_url( 'order-pay' ) ) {
+            $order_id = get_query_var('order-pay');
+            $order = new WC_Order( $order_id );
+            $total = $order->get_total();
+        } else {
+            $total = $woocommerce->cart->get_cart_contents_total();
+        }
+
+        return $total;
+    }
+
+    public function get_first_payment_value()
+    {
+        if ( is_admin() ) {
+            return '';
+        }
+
+        $total = $this->get_total_amount();
+        $each_payment = $total / 3;
+        $each_payment = number_format($each_payment, 2);
+
+        return sprintf( '%s %s', get_woocommerce_currency_symbol(), $each_payment );
+    }
+
     public function get_extra_description()
     {
         $html = '';
@@ -250,19 +278,6 @@ class riipay extends WC_Payment_Gateway
         $html .= '</p>';
 
         return $html;
-    }
-
-    public function get_first_payment_value()
-    {
-        if ( is_admin() ) {
-            return '';
-        }
-
-        $total = $this->get_total_amount();
-        $each_payment = $total / 3;
-        $each_payment = number_format($each_payment, 2);
-
-        return sprintf( '%s %s', get_woocommerce_currency_symbol(), $each_payment );
     }
 
     public function process_payment( $order_id )
@@ -311,21 +326,6 @@ class riipay extends WC_Payment_Gateway
             'result' => 'success',
             'redirect' => $this->get_url() . $get_arguments,
         );
-    }
-
-    public function get_total_amount()
-    {
-        global $woocommerce;
-
-        if ( is_wc_endpoint_url( 'order-pay' ) ) {
-            $order_id = get_query_var('order-pay');
-            $order = new WC_Order( $order_id );
-            $total = $order->get_total();
-        } else {
-            $total = $woocommerce->cart->get_cart_contents_total();
-        }
-
-        return $total;
     }
 
     public function check_response()

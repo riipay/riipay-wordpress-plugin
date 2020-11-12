@@ -40,12 +40,6 @@ class riipay extends WC_Payment_Gateway
             }
         }
 
-        if ( $this->environment == 'sandbox' ) {
-            $this->url = self::SANDBOX_URL;
-        } else {
-            $this->url = self::PRODUCTION_URL;
-        }
-
         if ( !$this->is_available() ) {
             $this->enabled = 'no';
         }
@@ -136,6 +130,11 @@ class riipay extends WC_Payment_Gateway
                 'description' => __( $extra_info_text , 'riipay' ),
             ),
         );
+    }
+
+    public function get_url()
+    {
+        return $this->get_option( 'environment' ) == 'sandbox' ? self::SANDBOX_URL : self::PRODUCTION_URL;
     }
 
     public function is_available()
@@ -244,7 +243,11 @@ class riipay extends WC_Payment_Gateway
         $html .= '<p> Pay ';
         $html .= $this->get_first_payment_value();
         $html .= ' now. </p>';
-        $html .= '<p>Any undisplayed remainders will be applied to the first repayment amount.</p>';
+        $html .= '<p>Any undisplayed remainders will be applied to the first repayment amount. ';
+
+        $url = esc_url( sprintf('%s/preview?merchant_code=%s&amount=%s', $this->get_url(), $this->get_option( 'merchant_code' ), $this->get_total_amount() ) );
+        $html .= sprintf('<a href="%s" target="_blank">More info</a>', $url);
+        $html .= '</p>';
 
         return $html;
     }
@@ -255,7 +258,6 @@ class riipay extends WC_Payment_Gateway
             return '';
         }
 
-        global $woocommerce;
         $total = $this->get_total_amount();
         $each_payment = $total / 3;
         $each_payment = number_format($each_payment, 2);
@@ -307,7 +309,7 @@ class riipay extends WC_Payment_Gateway
 
         return array(
             'result' => 'success',
-            'redirect' => $this->url . $get_arguments,
+            'redirect' => $this->get_url() . $get_arguments,
         );
     }
 

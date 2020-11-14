@@ -32,11 +32,7 @@ class riipay extends WC_Payment_Gateway
         $this->init_settings();
 
         foreach ( $this->settings as $key => $value ) {
-            if ($key == 'description') {
-                $this->description = $this->get_option( 'description', '' ) . $this->get_extra_description();
-            } else {
-                $this->$key = $value;
-            }
+            $this->$key = $value;
         }
 
         if ( !$this->is_available() ) {
@@ -48,6 +44,11 @@ class riipay extends WC_Payment_Gateway
         }
 
         add_action( 'woocommerce_api_' . $this->id, array( $this, 'check_response' ) );
+        add_filter( 'woocommerce_gateway_description', array( $this, 'riipay_custom_description' ), 10, 2 );
+
+        add_action( 'woocommerce_order_status_on-hold_to_failed', array( $this, 'increase_stock' ), 10, 1 );
+        add_action( 'woocommerce_order_status_failed_to_on-hold', array( $this, 'reduce_stock' ), 10, 1 );
+
         add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'woo_change_order_received_text' ), 10, 2 );
     }
 
@@ -236,12 +237,13 @@ class riipay extends WC_Payment_Gateway
     {
         global $woocommerce;
 
+        $total = 0;
         if ( is_wc_endpoint_url( 'order-pay' ) ) {
             $order_id = get_query_var('order-pay');
             $order = new WC_Order( $order_id );
             $total = $order->get_total();
-        } else {
-            $total = $woocommerce->cart->get_cart_contents_total();
+        } elseif ( $woocommerce->cart  ) {
+            $total = $woocommerce->cart->get_total('') ;
         }
 
         return $total;
@@ -260,14 +262,13 @@ class riipay extends WC_Payment_Gateway
         return sprintf( '%s %s', get_woocommerce_currency_symbol(), $each_payment );
     }
 
-    public function get_extra_description()
+    public function riipay_custom_description( $description, $payment_id )
     {
-        $html = '';
-
-        if ( is_admin() ) {
-            return $html;
+        if ( is_admin() || $payment_id !== 'riipay' ) {
+            return $description;
         }
 
+        $html = $description;
         $html .= '<p> Pay ';
         $html .= $this->get_first_payment_value();
         $html .= ' now. </p>';
@@ -362,17 +363,18 @@ class riipay extends WC_Payment_Gateway
 
         $order_signature = md5($merchant_code . $secret_key . $order_reference . $currency_code . $amount . $transaction_reference . $status_code);
 
-        $valid = $order_signature === $signature;
+        $valid = ( $order_signature === $signature );
 
         if ( !$valid ) {
             $order->update_status( 'failed' );
-            $order->add_order_note( __(  sprintf('Invalid Signature: %s. Expected: %s', $signature, $order_signature) , 'riipay' ), 1 );
+            $order->add_order_note( __(  sprintf('Invalid Signature: %s. Expected: %s', $signature, $order_signature) , 'riipay' ));
 
             if ( !$is_callback ) {
                 wc_add_notice(__('Invalid Signature. Please choose a valid payment method to proceed', 'riipay'), 'error');
                 wp_redirect( $order->get_checkout_payment_url() );
             }
 
+            echo 'Invalid Signature. Expected:  ' . $order_signature;
             exit();
         }
 
@@ -384,7 +386,6 @@ class riipay extends WC_Payment_Gateway
                 $order->add_order_note( __( $error_code . ': ' . $error_message, 'riipay'), 1 );
             } elseif ( $status_code == 'A' ) {
                 $order->update_status( 'on-hold', __( $note, 'riipay' ));
-
             } elseif ( $status_code == 'S' ) {
                 $order->payment_complete( $transaction_reference );
             }
@@ -397,6 +398,55 @@ class riipay extends WC_Payment_Gateway
         }
 
         exit();
+    }
+
+    public function increase_stock( $order )
+    {
+        $this->adjust_stock( $order, 'increase' );
+    }
+
+    public function reduce_stock( $order )
+    {
+        $this->adjust_stock( $order, 'reduce' );
+    }
+
+    protected function adjust_stock( $order, $operation )
+    {
+        if ( is_a( $order, 'WC_Order' ) ) {
+            $order_id = $order->get_id();
+        } else {
+            $order = wc_get_order( $order );
+        }
+
+        if ( get_option('woocommerce_manage_stock') !== 'yes' || $order->get_item_count() <= 0 ) {
+            return;
+        }
+
+        $changes = [];
+        foreach ( $order->get_items() as $item ) {
+            $product = $item->get_product();
+            $qty = $item['quantity'];
+            if ( $qty <= 0 || !$product || !$product->managing_stock() ) {
+                continue;
+            }
+
+            $old_qty = $product->get_stock_quantity();
+            $new_qty = wc_update_product_stock( $product, $qty, $operation );
+
+            if ( $operation == 'increase' ) {
+                $item->delete_meta_data( '_reduced_stock' );
+            } elseif ( $operation == 'reduce' ) {
+                $item->add_meta_data( '_reduced_stock', $qty, true );
+            }
+            $item->save();
+
+            $changes[] = sprintf('%s %s→%s', $product->get_formatted_name(), $old_qty, $new_qty);
+        }
+
+        if ( $changes ) {
+            $order_note = sprintf( 'Stock levels %sd: %s', $operation, implode( ', ', $changes ) );
+            $order->add_order_note( $order_note );
+        }
     }
 
     public function woo_change_order_received_text( $text, $order)

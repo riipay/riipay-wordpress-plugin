@@ -424,9 +424,17 @@ class riipay extends WC_Payment_Gateway
 
         $changes = [];
         foreach ( $order->get_items() as $item ) {
+            //only adjust stock once for each item
+            $qty = $item->get_meta( '_reduced_stock', true );
+            if ( $operation == 'increase' && $qty <= 0 ) {
+                continue;
+            } elseif ( $operation == 'reduce' && $qty > 0 ) {
+                continue;
+            }
+
+            //only adjust stock if product exists or product enables inventory management
             $product = $item->get_product();
-            $qty = $item['quantity'];
-            if ( $qty <= 0 || !$product || !$product->managing_stock() ) {
+            if ( !$product || !$product->managing_stock() ) {
                 continue;
             }
 

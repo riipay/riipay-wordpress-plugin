@@ -11,8 +11,6 @@ class riipay extends WC_Payment_Gateway
      */
     const PRODUCTION_URL = 'https://secure.riipay.my/v1/payment';
 
-
-
     public function __construct()
     {
         global $woocommerce;
@@ -54,7 +52,7 @@ class riipay extends WC_Payment_Gateway
 
     public function init_form_fields()
     {
-        $extra_info_text = 'For Production Environment, please update your details at <a href="https://merchant.uat.riipay.my/profile/update" target="_blank">Riipay Merchant Portal Settings</a>.<br />';
+        $extra_info_text = 'For Production Environment, please update your details at <a href="https://merchant.riipay.my/profile/update" target="_blank">Riipay Merchant Portal Settings</a>.<br />';
         $extra_info_text .= 'For Sandbox Environment, please update your details at <a href="https://merchant.uat.riipay.my/profile/update" target="_blank">Riipay Sandbox Merchant Portal Settings</a>.<br /><br />';
         $extra_info_text .= 'You may use the suggested values as follows: <br />';
 
@@ -65,30 +63,30 @@ class riipay extends WC_Payment_Gateway
 
         $this->form_fields = array(
             'enabled' => array(
-                'title' => __( 'Enable/Disable', 'riipay' ),
-                'label' => __( 'Enable riipay', 'riipay' ),
+                'title' => __( 'Enable Riipay', 'riipay' ),
+                'label' => __( 'Enable', 'riipay' ),
                 'type' => 'checkbox',
                 'default' => 'no',
             ),
             'title' =>  array(
                 'title' => __( 'Title', 'riipay' ),
                 'type' => 'text',
-                'description' => __( 'This controls the title which the user sees during checkout', 'riipay' ),
-                'desc_tip' => true,
-                'default' => __( 'riipay', 'riipay' ),
+                'description' => __( 'This controls the title which the user sees during checkout e.g. Riipay 0% Instalment Payment', 'riipay' ),
+                'desc_tip' => false,
+                'default' => __( 'Riipay 0% Instalment Payment', 'riipay' ),
             ),
             'description' => array(
                 'title' => __( 'Checkout Message', 'riipay' ),
                 'type' => 'textarea',
                 'description' => __( 'This controls the message which the user sees during checkout', 'riipay' ),
-                'desc_tip' => true,
-                'default' => ''
+                'desc_tip' => false,
+                'default' => __('Split your purchase into 3 interest-free payments, due monthly.', 'riipay')
             ),
             'merchant_code' =>  array(
                 'title' => __( 'Merchant Code', 'riipay' ),
                 'type' => 'text',
                 'description' => __( 'Merchant Code provided by riipay', 'riipay' ),
-                'desc_tip' => true,
+                'desc_tip' => false,
                 'default' => '',
                 'required' => true,
             ),
@@ -96,7 +94,7 @@ class riipay extends WC_Payment_Gateway
                 'title' => __( 'Secret Key', 'riipay' ),
                 'type' => 'text',
                 'description' => __( 'Secret Key provided by riipay', 'riipay' ),
-                'desc_tip' => true,
+                'desc_tip' => false,
                 'default' => '',
                 'required' => true,
             ),
@@ -104,14 +102,14 @@ class riipay extends WC_Payment_Gateway
                 'title' => __( 'Minimum Order Amount', 'riipay' ),
                 'type' => 'text',
                 'description' => __( 'Minimum order amount required to use this payment gateway', 'riipay' ),
-                'desc_tip' => true,
+                'desc_tip' => false,
                 'default' => 0,
             ),
             'max_amount' => array(
                 'title' => __( 'Maximum Order Amount', 'riipay' ),
                 'type' => 'text',
                 'description' => __( 'Maximum order amount to use this payment gateway. For orders exceeding RM1000, Riipay will reject payments until further notice at the moment.', 'riipay' ),
-                'desc_tip' => true,
+                'desc_tip' => false,
                 'default' => 1000,
             ),
             'environment' => array(
@@ -119,11 +117,18 @@ class riipay extends WC_Payment_Gateway
                 'type' => 'select',
                 'description' => __( 'Choose whether you wish to use sandbox or production mode. You may use sandbox mode to test payments.', 'riipay' ),
                 'default' => 'production',
-                'desc_tip'    => true,
+                'desc_tip'    => false,
                 'options'     => array(
                     'production'	=> __( 'Production', 'riipay' ),
                     'sandbox'	=> __( 'Sandbox', 'riipay' )
                 ),
+            ),
+            'custom_product_price' => array(
+                'title' => __( 'Riipay Product Price', 'riipay' ),
+                'label' => __( 'Enable', 'riipay' ),
+                'description' => __('Enable custom product price text with riipay instalment information. Note: this does not work with WooCommerce Blocks All Products', 'riipay'),
+                'type' => 'checkbox',
+                'default' => 'yes',
             ),
             'extra_info' => array(
                 'title' => __( 'Extra Information', 'riipay' ),
@@ -275,7 +280,7 @@ class riipay extends WC_Payment_Gateway
         $html .= '<p>Any undisplayed remainders will be applied to the first repayment amount. ';
 
         $url = esc_url( sprintf('%s/preview?merchant_code=%s&amount=%s', $this->get_url(), $this->get_option( 'merchant_code' ), $this->get_total_amount() ) );
-        $html .= sprintf('<a href="%s" target="_blank">More info</a>', $url);
+        $html .= sprintf('<a href="%s" onclick="window.open(\'%s\', \'popup\', \'width=600,height=700\'); return false;" target="popup" style="text-decoration: underline;">More info</a>', $url, $url);
         $html .= '</p>';
 
         return $html;

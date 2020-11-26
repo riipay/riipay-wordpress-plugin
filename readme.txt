@@ -52,6 +52,15 @@ Kindly contact Riipay customer service at contact@riipay.my.
 
 == Changelog ==
 
+= 1.0.1 =
+* Allow merchant to enabled Riipay price display on product widget
+* Fix product merchant portal URL
+
+= 1.0.0 =
+First stable release
+* both sandbox and production ready
+* custom riipay payment title and description
+
 = 0.1.0 =
 Beta version for sandbox testing.
 

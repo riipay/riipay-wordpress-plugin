@@ -63,8 +63,8 @@ class riipay extends WC_Payment_Gateway
 
         $this->form_fields = array(
             'enabled' => array(
-                'title' => __( 'Enable/Disable', 'riipay' ),
-                'label' => __( 'Enable riipay', 'riipay' ),
+                'title' => __( 'Enable Riipay', 'riipay' ),
+                'label' => __( 'Enable', 'riipay' ),
                 'type' => 'checkbox',
                 'default' => 'no',
             ),
@@ -124,7 +124,7 @@ class riipay extends WC_Payment_Gateway
                 ),
             ),
             'custom_product_price' => array(
-                'title' => __( 'Custom Product Price Text', 'riipay' ),
+                'title' => __( 'Riipay Product Price', 'riipay' ),
                 'label' => __( 'Enable', 'riipay' ),
                 'description' => __('Enable custom product price text with riipay instalment information. Note: this does not work with WooCommerce Blocks All Products', 'riipay'),
                 'type' => 'checkbox',
@@ -280,7 +280,7 @@ class riipay extends WC_Payment_Gateway
         $html .= '<p>Any undisplayed remainders will be applied to the first repayment amount. ';
 
         $url = esc_url( sprintf('%s/preview?merchant_code=%s&amount=%s', $this->get_url(), $this->get_option( 'merchant_code' ), $this->get_total_amount() ) );
-        $html .= sprintf('<a href="%s" target="_blank">More info</a>', $url);
+        $html .= sprintf('<a href="%s" onclick="window.open(\'%s\', \'popup\', \'width=600,height=700\'); return false;" target="popup" style="text-decoration: underline;">More info</a>', $url, $url);
         $html .= '</p>';
 
         return $html;

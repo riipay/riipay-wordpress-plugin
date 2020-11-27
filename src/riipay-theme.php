@@ -28,7 +28,7 @@ function riipay_custom_price_html( $price_html, $product )
 
     $html .= '<p style="font-size: 12px; font-weight: 400; margin-bottom: 0;">';
     $html .= 'or 3 interest-free payments with ';
-    $html .= sprintf('<img src="%s" width="40px" style="display: inline-block; vertical-align: middle; max-width: 40px; float: none">', 'https://secure.uat.riipay.my/images/logos/new/logo-purple-light.png');
+    $html .= sprintf('<img src="%s" width="40px" style="all: unset; display: inline-block; vertical-align: middle; max-width: 40px; float: none">', 'https://secure.uat.riipay.my/images/logos/new/logo-purple-light.png');
     $html .= '</p><p style="font-size: 12px; font-weight: 400; margin-top: 0;">';
     $html .= sprintf('<a href="%s" onclick="window.open(\'%s\', \'popup\', \'width=600,height=700\'); return false;" target="popup" style="font-size: 12px; font-weight: 400; text-decoration: underline;">More info</a>', $url, $url);
     $html .= '</p>';

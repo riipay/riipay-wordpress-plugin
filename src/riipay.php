@@ -46,6 +46,8 @@ class riipay extends WC_Payment_Gateway
         add_action( 'woocommerce_api_' . $this->id, array( $this, 'check_response' ) );
         add_filter( 'woocommerce_gateway_description', array( $this, 'riipay_custom_description' ), 10, 2 );
 
+//        add_filter( 'woocommerce_payment_gateways', array( $this, 'riipay_custom_payment_gateways'), 10, 1 );
+
         add_action( 'woocommerce_order_status_on-hold_to_failed', array( $this, 'increase_stock' ), 10, 1 );
         add_action( 'woocommerce_order_status_failed_to_on-hold', array( $this, 'reduce_stock' ), 10, 1 );
 
@@ -490,6 +492,29 @@ class riipay extends WC_Payment_Gateway
             $order_note = sprintf( 'Stock levels %sd: %s', $operation, implode( ', ', $changes ) );
             $order->add_order_note( $order_note );
         }
+    }
+
+    public function riipay_custom_payment_gateways( $available_gateways )
+    {
+        if ( ! is_wc_endpoint_url( 'order-pay' ) ) {
+            return $available_gateways;
+        }
+
+        $order_id = get_query_var('order-pay');
+        $order = new WC_Order( $order_id );
+        if ( !$order ) {
+            return $available_gateways;
+        }
+
+        if ( $order->get_payment_method() ===  $this->id ) {
+            foreach ( $available_gateways as $key => $gateway ) {
+                if ( $gateway->id !== $this->id ) {
+                    unset($available_gateways[$key]);
+                }
+            }
+        }
+
+        return $available_gateways;
     }
 
     public function woo_change_order_received_text( $text, $order)

@@ -1,5 +1,7 @@
 <?php
 
+defined('ABSPATH') || exit;
+
 class riipay extends WC_Payment_Gateway
 {
     /**
@@ -129,6 +131,34 @@ class riipay extends WC_Payment_Gateway
                 'description' => __('Enable custom product price text with riipay instalment information. Note: this does not work with WooCommerce Blocks All Products', 'riipay'),
                 'type' => 'checkbox',
                 'default' => 'yes',
+            ),
+            'surcharge_settings' => array(
+                'title' => __( 'Surcharge Settings', 'riipay' ),
+                'type' => 'title',
+                'description' => __( 'Extra transaction fees for each order by using Riipay', 'riipay' ),
+            ),
+            'surcharge_title' => array(
+                'title' => __( 'Surcharge Title', 'riipay' ),
+                'type' => 'text',
+                'description' => __( 'This controls the title of the surcharge, e.g. Surcharge for Riipay', 'riipay' ),
+                'default' => 'Surcharge for Riipay'
+            ),
+            'surcharge_type' => array(
+                'title' => __( 'Surcharge Type', 'riipay' ),
+                'type' => 'select',
+                'default' => 'none',
+                'description' => __( 'Select the type of surcharge', 'riipay' ),
+                'options' => array(
+                    'none' => __( 'No Surcharge', 'riipay' ),
+                    'amount' => __( 'Fixed Amount', 'riipay' ),
+                    'percentage' => __( 'Percentage on Order Total Amount', 'riipay' ),
+                )
+            ),
+            'surcharge_value' => array(
+                'title' => __( 'Surcharge Amount', 'riipay' ),
+                'type' => 'number',
+                'description' => __( 'The amount/percentage of surcharge', 'riipay' ),
+                'default' => 0
             ),
             'extra_info' => array(
                 'title' => __( 'Extra Information', 'riipay' ),

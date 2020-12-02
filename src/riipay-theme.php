@@ -1,5 +1,7 @@
 <?php
 
+defined('ABSPATH') || exit;
+
 add_filter( 'woocommerce_get_price_html', 'riipay_custom_price_html', 10, 2 );
 function riipay_custom_price_html( $price_html, $product )
 {

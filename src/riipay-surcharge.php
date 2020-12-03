@@ -2,7 +2,7 @@
 
 defined('ABSPATH') || exit;
 
-//add_action('woocommerce_cart_calculate_fees', 'riipay_custom_surcharge', 10 );
+add_action('woocommerce_cart_calculate_fees', 'riipay_custom_surcharge', 10 );
 function riipay_custom_surcharge()
 {
     if ( is_admin() && !defined( 'DOING_AJAX' ) ) {
@@ -14,7 +14,7 @@ function riipay_custom_surcharge()
     }
 
     $settings = get_option('woocommerce_riipay_settings');
-    $type = $settings['surcharge_type'];
+    $type = isset( $settings['surcharge_type'] ) ? $settings['surcharge_type'] : 'none';
     if ( $type === 'none' ) {
         return;
     }
@@ -41,13 +41,17 @@ function riipay_custom_surcharge()
     }
 }
 
-//add_action('wp_enqueue_scripts', 'riipay_enqueue_scripts' );
+add_action('wp_enqueue_scripts', 'riipay_enqueue_scripts' );
 function riipay_enqueue_scripts()
 {
-    wp_enqueue_script( 'riipay-script', plugins_url( 'riipay-script.js', __FILE__ ), array('jquery') );
+    $settings = get_option('woocommerce_riipay_settings');
+    $type = isset( $settings['surcharge_type'] ) ? $settings['surcharge_type'] : 'none';
+    if ( $type !== 'none' ) {
+        wp_enqueue_script( 'riipay-script', plugins_url( 'riipay-script.js', __FILE__ ), array('jquery') );
+    }
 }
 
-//add_filter( 'woocommerce_locate_template', 'riipay_custom_plugin_template', 1, 3 );
+add_filter( 'woocommerce_locate_template', 'riipay_custom_plugin_template', 1, 3 );
 function riipay_custom_plugin_template( $template, $template_name, $template_path ) {
     global $woocommerce;
     $_template = $template;

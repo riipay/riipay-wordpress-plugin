@@ -3,7 +3,7 @@ Contributors: riipay
 Tags: riipay, payment gateway, Malaysia, ecommerce, woocommerce
 Requires at least: 4.4
 Tested up to: 5.5.3
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,9 +52,12 @@ Kindly contact Riipay customer service at contact@riipay.my.
 
 == Changelog ==
 
+= 1.0.2 =
+* Allow merchant to add surcharge to customers when they make payments using Riipay
+
 = 1.0.1 =
 * Allow merchant to enabled Riipay price display on product widget
-* Fix product merchant portal URL
+* Fix production merchant portal URL
 
 = 1.0.0 =
 First stable release

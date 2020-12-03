@@ -1,5 +1,7 @@
 <?php
 
+defined('ABSPATH') || exit;
+
 class riipay extends WC_Payment_Gateway
 {
     /**
@@ -43,6 +45,8 @@ class riipay extends WC_Payment_Gateway
 
         add_action( 'woocommerce_api_' . $this->id, array( $this, 'check_response' ) );
         add_filter( 'woocommerce_gateway_description', array( $this, 'riipay_custom_description' ), 10, 2 );
+
+//        add_filter( 'woocommerce_payment_gateways', array( $this, 'riipay_custom_payment_gateways'), 10, 1 );
 
         add_action( 'woocommerce_order_status_on-hold_to_failed', array( $this, 'increase_stock' ), 10, 1 );
         add_action( 'woocommerce_order_status_failed_to_on-hold', array( $this, 'reduce_stock' ), 10, 1 );
@@ -130,6 +134,34 @@ class riipay extends WC_Payment_Gateway
                 'type' => 'checkbox',
                 'default' => 'yes',
             ),
+//            'surcharge_settings' => array(
+//                'title' => __( 'Surcharge Settings', 'riipay' ),
+//                'type' => 'title',
+//                'description' => __( 'Extra transaction fees for each order by using Riipay', 'riipay' ),
+//            ),
+//            'surcharge_title' => array(
+//                'title' => __( 'Surcharge Title', 'riipay' ),
+//                'type' => 'text',
+//                'description' => __( 'This controls the title of the surcharge, e.g. Surcharge for Riipay', 'riipay' ),
+//                'default' => 'Surcharge for Riipay'
+//            ),
+//            'surcharge_type' => array(
+//                'title' => __( 'Surcharge Type', 'riipay' ),
+//                'type' => 'select',
+//                'default' => 'none',
+//                'description' => __( 'Select the type of surcharge', 'riipay' ),
+//                'options' => array(
+//                    'none' => __( 'No Surcharge', 'riipay' ),
+//                    'amount' => __( 'Fixed Amount', 'riipay' ),
+//                    'percentage' => __( 'Percentage on Order Total Amount', 'riipay' ),
+//                )
+//            ),
+//            'surcharge_value' => array(
+//                'title' => __( 'Surcharge Amount', 'riipay' ),
+//                'type' => 'number',
+//                'description' => __( 'The amount/percentage of surcharge', 'riipay' ),
+//                'default' => 0
+//            ),
             'extra_info' => array(
                 'title' => __( 'Extra Information', 'riipay' ),
                 'type' => 'title',
@@ -460,6 +492,29 @@ class riipay extends WC_Payment_Gateway
             $order_note = sprintf( 'Stock levels %sd: %s', $operation, implode( ', ', $changes ) );
             $order->add_order_note( $order_note );
         }
+    }
+
+    public function riipay_custom_payment_gateways( $available_gateways )
+    {
+        if ( ! is_wc_endpoint_url( 'order-pay' ) ) {
+            return $available_gateways;
+        }
+
+        $order_id = get_query_var('order-pay');
+        $order = new WC_Order( $order_id );
+        if ( !$order ) {
+            return $available_gateways;
+        }
+
+        if ( $order->get_payment_method() ===  $this->id ) {
+            foreach ( $available_gateways as $key => $gateway ) {
+                if ( $gateway->id !== $this->id ) {
+                    unset($available_gateways[$key]);
+                }
+            }
+        }
+
+        return $available_gateways;
     }
 
     public function woo_change_order_received_text( $text, $order)

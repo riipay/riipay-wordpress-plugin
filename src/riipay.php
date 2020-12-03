@@ -46,7 +46,7 @@ class riipay extends WC_Payment_Gateway
         add_action( 'woocommerce_api_' . $this->id, array( $this, 'check_response' ) );
         add_filter( 'woocommerce_gateway_description', array( $this, 'riipay_custom_description' ), 10, 2 );
 
-//        add_filter( 'woocommerce_payment_gateways', array( $this, 'riipay_custom_payment_gateways'), 10, 1 );
+        add_filter( 'woocommerce_available_payment_gateways', array( $this, 'riipay_available_payment_gateways'), 10, 1 );
 
         add_action( 'woocommerce_order_status_on-hold_to_failed', array( $this, 'increase_stock' ), 10, 1 );
         add_action( 'woocommerce_order_status_failed_to_on-hold', array( $this, 'reduce_stock' ), 10, 1 );
@@ -172,7 +172,7 @@ class riipay extends WC_Payment_Gateway
 
     public function get_url()
     {
-        return $this->get_option( 'environment' ) == 'sandbox' ? self::SANDBOX_URL : self::PRODUCTION_URL;
+        return $this->get_option( 'environment', 'production' ) == 'sandbox' ? self::SANDBOX_URL : self::PRODUCTION_URL;
     }
 
     public function is_available()
@@ -189,12 +189,20 @@ class riipay extends WC_Payment_Gateway
             return true;
         }
 
-        if ( $this->min_amount > 0 ) {
-            $total = $this->get_total_amount();
-            $available = ( $this->min_amount <= $total ) && ( $total <= $this->max_amount );
+        //only visible to admin if under sandbox environment
+        $environment = $this->get_option( 'environment', 'production' );
+        if ( $environment === 'sandbox' && !current_user_can('administrator') ) {
+            return false;
+        }
 
-            if ( is_wc_endpoint_url( 'order-pay' ) ) {
-                $this->chosen = true;
+        $min_amount = $this->get_option( 'min_amount', 0 );
+        if ( $min_amount  > 0 ) {
+            $total = $this->get_total_amount();
+            $available = ( $min_amount <= $total );
+
+            $max_amount = $this->get_option( 'max_amount', 0 );
+            if ( $available && $max_amount > 0 ) {
+                $available = ( $total <= $max_amount );
             }
 
             return $available;
@@ -207,7 +215,7 @@ class riipay extends WC_Payment_Gateway
     {
 
         $valid = true;
-        if ( empty($this->merchant_code) ) {
+        if ( empty( $this->get_option( 'merchant_code' ) ) ) {
             add_action('admin_notices', array(
                     &$this,
                     'merchant_code_missing_message')
@@ -215,7 +223,7 @@ class riipay extends WC_Payment_Gateway
             $valid = false;
         }
 
-        if ( empty($this->secret_key) ) {
+        if ( empty( $this->get_option( 'secret_key' ) ) ) {
             add_action('admin_notices', array(
                     &$this,
                     'secret_key_missing_message')
@@ -301,7 +309,7 @@ class riipay extends WC_Payment_Gateway
 
     public function riipay_custom_description( $description, $payment_id )
     {
-        if ( is_admin() || $payment_id !== 'riipay' ) {
+        if ( is_admin() || $payment_id !== $this->id ) {
             return $description;
         }
 
@@ -321,7 +329,7 @@ class riipay extends WC_Payment_Gateway
     public function process_payment( $order_id )
     {
         $order = new WC_Order( $order_id );
-        $merchant_code = $this->merchant_code;
+        $merchant_code = $this->get_option( 'merchant_code' );
         $reference = $order->get_order_number();
         $description = 'Payment for order ' . $reference;
         $currency_code = $order->get_currency();
@@ -330,7 +338,7 @@ class riipay extends WC_Payment_Gateway
         $customer_phone = $order->get_billing_phone();
         $customer_email = $order->get_billing_email();
         $customer_ip = $order->get_customer_ip_address();
-        $signature = md5($merchant_code . $this->secret_key . $reference . $currency_code . $amount);
+        $signature = md5($merchant_code . $this->get_option( 'secret_key' ) . $reference . $currency_code . $amount);
         $return_url = WC()->api_request_url( get_class($this) );
         $callback_url = add_query_arg( array('callback' => 1), $return_url );
 
@@ -391,8 +399,8 @@ class riipay extends WC_Payment_Gateway
         $error_message = trim( sanitize_text_field( $data['error_message'] ) );
 
         $order = new WC_Order( $reference );
-        $merchant_code = $this->merchant_code;
-        $secret_key = $this->secret_key;
+        $merchant_code = $this->get_option( 'merchant_code' );
+        $secret_key = $this->get_option( 'secret_key' );
         $order_reference = $order->get_order_number();
         $currency_code = $order->get_currency();
         $amount = number_format( $order->get_total(), 2, '.', '' );
@@ -494,7 +502,7 @@ class riipay extends WC_Payment_Gateway
         }
     }
 
-    public function riipay_custom_payment_gateways( $available_gateways )
+    public function riipay_available_payment_gateways( $available_gateways )
     {
         if ( ! is_wc_endpoint_url( 'order-pay' ) ) {
             return $available_gateways;

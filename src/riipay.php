@@ -508,6 +508,11 @@ class riipay extends WC_Payment_Gateway
             return $available_gateways;
         }
 
+        if ( $this->get_option('surcharge_type', 'none') === 'none' ) {
+            return $available_gateways;
+        }
+
+
         $order_id = get_query_var('order-pay');
         $order = new WC_Order( $order_id );
         if ( !$order ) {
@@ -517,7 +522,13 @@ class riipay extends WC_Payment_Gateway
         if ( $order->get_payment_method() ===  $this->id ) {
             foreach ( $available_gateways as $key => $gateway ) {
                 if ( $gateway->id !== $this->id ) {
-                    unset($available_gateways[$key]);
+                    unset( $available_gateways[$key] );
+                }
+            }
+        } else {
+            foreach ( $available_gateways as $key => $gateway ) {
+                if ( $gateway->id === $this->id ) {
+                    unset( $available_gateways[$key] );
                 }
             }
         }

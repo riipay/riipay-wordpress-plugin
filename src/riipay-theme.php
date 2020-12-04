@@ -7,8 +7,14 @@ function riipay_custom_price_html( $price_html, $product )
 {
     $settings = get_option('woocommerce_riipay_settings');
     $enabled = ( $settings['enabled'] === 'yes' );
-    $custom = ( $settings['custom_product_price'] === 'yes' );
+    $custom = isset( $settings['custom_product_price'] ) ?  ( $settings['custom_product_price'] === 'yes' ) : 'yes';
     if ( !$enabled || !$custom ) {
+        return $price_html;
+    }
+
+    //only visible to admin if under sandbox environment
+    $environment = isset($settings['environment']) ? $settings['environment'] : 'production';
+    if ( $environment === 'sandbox' && !current_user_can('administrator') ) {
         return $price_html;
     }
 
@@ -30,7 +36,7 @@ function riipay_custom_price_html( $price_html, $product )
 
     $html .= '<p style="font-size: 12px; font-weight: 400; margin-bottom: 0;">';
     $html .= 'or 3 interest-free payments with ';
-    $html .= sprintf('<img src="%s" width="40px" style="all: unset; display: inline-block; vertical-align: middle; max-width: 40px; float: none">', 'https://secure.uat.riipay.my/images/logos/new/logo-purple-light.png');
+    $html .= sprintf('<img src="%s" width="40px" style="all: unset; display: inline-block; vertical-align: bottom; max-width: 40px; float: none">', 'https://secure.uat.riipay.my/images/logos/new/logo-purple-light.png');
     $html .= '</p><p style="font-size: 12px; font-weight: 400; margin-top: 0;">';
     $html .= sprintf('<a href="%s" onclick="window.open(\'%s\', \'popup\', \'width=600,height=700\'); return false;" target="popup" style="font-size: 12px; font-weight: 400; text-decoration: underline;">More info</a>', $url, $url);
     $html .= '</p>';

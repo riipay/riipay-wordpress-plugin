@@ -301,10 +301,10 @@ class riipay extends WC_Payment_Gateway
         }
 
         $total = $this->get_total_amount();
-        $each_payment = $total / 3;
-        $each_payment = number_format($each_payment, 2);
+        $first_payment = $total / 3;
+        $first_payment = number_format($first_payment, 2);
 
-        return sprintf( '%s %s', get_woocommerce_currency_symbol(), $each_payment );
+        return sprintf( '%s %s', get_woocommerce_currency_symbol(), $first_payment );
     }
 
     public function riipay_custom_description( $description, $payment_id )
@@ -412,11 +412,11 @@ class riipay extends WC_Payment_Gateway
 
         if ( !$valid ) {
             $order->update_status( 'failed' );
-            $order->add_order_note( __(  sprintf('Invalid Signature: %s. Expected: %s', $signature, $order_signature) , 'riipay' ));
+            $order->add_order_note( __( 'Payment failed. Invalid Signature.', 'riipay' ) );
 
             if ( !$is_callback ) {
-                wc_add_notice(__('Invalid Signature. Please choose a valid payment method to proceed', 'riipay'), 'error');
-                wp_redirect( $order->get_checkout_payment_url() );
+                wc_add_notice(__('An error occurred. Please contact store owner if this problem persists.', 'riipay'), 'error');
+                wp_redirect($order->get_checkout_payment_url());
             }
 
             echo 'Invalid Signature. Expected:  ' . $order_signature;

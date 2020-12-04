@@ -54,6 +54,8 @@ Kindly contact Riipay customer service at contact@riipay.my.
 
 = 1.0.2 =
 * Allow merchant to add surcharge to customers when they make payments using Riipay
+* Make Riipay visible to store administrators only when in sandbox environment
+* Set plugin settings default value
 
 = 1.0.1 =
 * Allow merchant to enabled Riipay price display on product widget

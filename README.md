@@ -1,6 +1,6 @@
 # Riipay for WooCommerce
 
-Accept payment by using Riipay on Woocommerce. Currently available for sandbox testing only.
+Accept payment by using Riipay on Woocommerce.
 
 ## Installation
 

@@ -3,7 +3,7 @@ Contributors: riipay
 Tags: riipay, payment gateway, Malaysia, ecommerce, woocommerce
 Requires at least: 4.4
 Tested up to: 5.5.3
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,9 @@ Kindly contact Riipay customer service at contact@riipay.my.
 == Screenshots ==
 
 == Changelog ==
+
+= 1.0.3 =
+Remove order status checking when processing callback response
 
 = 1.0.2 =
 * Allow merchant to add surcharge to customers when they make payments using Riipay

@@ -2,6 +2,7 @@
 /**
  * Plugin Name: Riipay for Woocommerce
  * Description: Start accepting payments with zero-interest instalments using credit or debit cards now!
+ * Version: 1.0.4
  * Version: 1.0.3
  * Author: Riipay
  * Author URI: https://riipay.my

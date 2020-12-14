@@ -425,13 +425,15 @@ class riipay extends WC_Payment_Gateway
 
         $note = $status_message . sprintf(' [%s]', $transaction_reference );
 
-        if ( $status_code == 'F') {
-            $order->update_status( 'failed', __(  $note , 'riipay' ), 1 );
-            $order->add_order_note( __( $error_code . ': ' . $error_message, 'riipay'), 1 );
-        } elseif ( $status_code == 'A' ) {
-            $order->update_status( 'on-hold', __( $note, 'riipay' ));
-        } elseif ( $status_code == 'S' ) {
-            $order->payment_complete( $transaction_reference );
+        if ( !in_array( strtolower($order_status), array( 'processing', 'completed', 'refunded' ) ) ) {
+            if ( $status_code == 'F') {
+                $order->update_status( 'failed', __(  $note , 'riipay' ), 1 );
+                $order->add_order_note( __( $error_code . ': ' . $error_message, 'riipay'), 1 );
+            } elseif ( $status_code == 'A' ) {
+                $order->update_status( 'on-hold', __( $note, 'riipay' ));
+            } elseif ( $status_code == 'S' ) {
+                $order->payment_complete( $transaction_reference );
+            }
         }
 
         if ( $is_callback ) {

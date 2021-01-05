@@ -399,40 +399,61 @@ class riipay extends WC_Payment_Gateway
         $error_message = trim( sanitize_text_field( $data['error_message'] ) );
 
         $order = new WC_Order( $reference );
-        $merchant_code = $this->get_option( 'merchant_code' );
-        $secret_key = $this->get_option( 'secret_key' );
-        $order_reference = $order->get_order_number();
-        $currency_code = $order->get_currency();
-        $amount = number_format( $order->get_total(), 2, '.', '' );
         $order_status = $order->get_status();
-
-        $order_signature = md5($merchant_code . $secret_key . $order_reference . $currency_code . $amount . $transaction_reference . $status_code);
-
-        $valid = ( $order_signature === $signature );
-
-        if ( !$valid ) {
-            $order->update_status( 'failed' );
-            $order->add_order_note( __( 'Payment failed. Invalid Signature.', 'riipay' ) );
-
-            if ( !$is_callback ) {
-                wc_add_notice(__('An error occurred. Please contact store owner if this problem persists.', 'riipay'), 'error');
-                wp_redirect($order->get_checkout_payment_url());
-            }
-
-            echo 'Invalid Signature.';
-            exit();
-        }
 
         $note = $status_message . sprintf(' [%s]', $transaction_reference );
 
         if ( !in_array( strtolower($order_status), array( 'processing', 'completed', 'refunded' ) ) ) {
             if ( $status_code == 'F') {
-                $order->update_status( 'failed', __(  $note , 'riipay' ), 1 );
-                $order->add_order_note( __( $error_code . ': ' . $error_message, 'riipay'), 1 );
-            } elseif ( $status_code == 'A' ) {
-                $order->update_status( 'on-hold', __( $note, 'riipay' ));
-            } elseif ( $status_code == 'S' ) {
-                $order->payment_complete( $transaction_reference );
+                //do not update order status if error code is in this array
+                $skip = array(
+                    '400', //invalid request parameters
+                    '401', //invalid signature
+                    '402', //merchant limit exceeded
+                    '404', //invalid merchant code
+                    '409', //invalid session
+                    '410', //cancelled by customer
+                    '412', //invalid merchant callback
+                    '429', //payment duplicated
+                );
+
+                $order->add_order_note(__($error_code . ': ' . $error_message, 'riipay'), 1);
+                if (!in_array($error_code, $skip)) {
+                    $order->update_status('failed', __($note, 'riipay'), 1);
+                } elseif ( $error_code === '410' ) {
+                    wp_redirect($order->get_checkout_payment_url());
+                    exit();
+                }
+
+            } else {
+                //check if signature is valid
+                $merchant_code = $this->get_option('merchant_code');
+                $secret_key = $this->get_option('secret_key');
+                $order_reference = $order->get_order_number();
+                $currency_code = $order->get_currency();
+                $amount = number_format($order->get_total(), 2, '.', '');
+
+                $order_signature = md5($merchant_code . $secret_key . $order_reference . $currency_code . $amount . $transaction_reference . $status_code);
+
+                $valid = ($order_signature === $signature);
+                if (!$valid) {
+//                    $order->update_status( 'failed' );
+                    $order->add_order_note(__('Invalid Signature.', 'riipay'));
+
+                    if (!$is_callback) {
+                        wc_add_notice(__('An error occurred. Please contact store owner if this problem persists.', 'riipay'), 'error');
+                        wp_redirect($order->get_checkout_payment_url());
+                    }
+
+                    exit();
+                }
+
+                //only update order status if signature is valid and status code is not failed
+                if ($status_code == 'A') {
+                    $order->update_status('on-hold', __($note, 'riipay'));
+                } elseif ($status_code == 'S') {
+                    $order->payment_complete($transaction_reference);
+                }
             }
         }
 

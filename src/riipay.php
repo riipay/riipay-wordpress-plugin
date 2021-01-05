@@ -415,16 +415,21 @@ class riipay extends WC_Payment_Gateway
                     '410', //cancelled by customer
                     '412', //invalid merchant callback
                     '429', //payment duplicated
+
+                    '500',
+                    '501',
+                    '502',
+                    '503',
+                    '504',
                 );
 
                 $order->add_order_note(__($error_code . ': ' . $error_message, 'riipay'), 1);
-                if (!in_array($error_code, $skip)) {
+                if ( !in_array($error_code, $skip) ) {
                     $order->update_status('failed', __($note, 'riipay'), 1);
                 } elseif ( $error_code === '410' ) {
                     wp_redirect($order->get_checkout_payment_url());
                     exit();
                 }
-
             } else {
                 //check if signature is valid
                 $merchant_code = $this->get_option('merchant_code');

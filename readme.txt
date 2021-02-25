@@ -3,7 +3,7 @@ Contributors: riipay
 Tags: riipay, payment gateway, Malaysia, ecommerce, woocommerce
 Requires at least: 4.4
 Tested up to: 5.6
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,9 @@ Kindly contact Riipay customer service at contact@riipay.my.
 == Screenshots ==
 
 == Changelog ==
+
+= 1.0.8 =
+Allow customisation for Riipay custom price logo position.
 
 = 1.0.7 =
 Do not update order status if server error.

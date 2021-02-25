@@ -34,9 +34,12 @@ function riipay_custom_price_html( $price_html, $product )
         ), $url . '/preview');
     $html = $price_html;
 
+    $logoVerticalAlign = $settings['logo_vertical_align'] ? $settings['logo_vertical_align'] : 'middle';
+    $logoMarginBottom = $settings['logo_margin_bottom'] ? $settings['logo_margin_bottom'] : 0;
+
     $html .= '<p style="font-size: 12px; font-weight: 400; margin-bottom: 0; line-height: 20px;">';
     $html .= 'or 3 interest-free payments with ';
-    $html .= sprintf('<img src="%s" width="40px" style="all: unset; display: inline-block; vertical-align: middle; max-width: 40px; float: none; max-height: 20px;">', 'https://secure.uat.riipay.my/images/logos/new/logo-purple-light.png');
+    $html .= sprintf('<img src="%s" width="40px" style="all: unset; display: inline-block; vertical-align: %s; max-width: 40px; float: none; max-height: 20px; margin-bottom: %s">', 'https://secure.uat.riipay.my/images/logos/new/logo-purple-light.png', $logoVerticalAlign, $logoMarginBottom);
     $html .= '</p><p style="font-size: 12px; font-weight: 400; margin-top: 0;">';
     $html .= sprintf('<a href="%s" onclick="window.open(\'%s\', \'popup\', \'width=600,height=700\'); return false;" target="popup" style="font-size: 12px; font-weight: 400; text-decoration: underline;">More info</a>', $url, $url);
     $html .= '</p>';

@@ -128,11 +128,32 @@ class riipay extends WC_Payment_Gateway
                 ),
             ),
             'custom_product_price' => array(
-                'title' => __( 'Riipay Product Price', 'riipay' ),
+                'title' => __( 'Enable Riipay Product Price', 'riipay' ),
                 'label' => __( 'Enable', 'riipay' ),
-                'description' => __('Enable custom product price text with riipay instalment information. Note: this does not work with WooCommerce Blocks All Products', 'riipay'),
                 'type' => 'checkbox',
                 'default' => 'yes',
+            ),
+            'logo_vertical_align' => array(
+                'title' => __( 'Riipay Logo Vertical Alignmt.', 'riipay' ),
+                'type' => 'select',
+                  'description' => __( 'Set the vertical alignment of Riipay Logo in custom product price text', 'riipay' ),
+                  'default' => 'middle',
+                  'desc_tip'    => false,
+                  'options'     => array(
+                      'top'	=> __( 'Top', 'riipay' ),
+                      'text-top'	=> __( 'Text Top', 'riipay' ),
+                      'middle'	=> __( 'Middle', 'riipay' ),
+                      'bottom'	=> __( 'Bottom', 'riipay' ),
+                      'text-bottom'	=> __( 'Text Bottom', 'riipay' ),
+                  ),
+
+            ),
+            'logo_margin_bottom' => array(
+              'title' => __( 'Riipay Logo Margin Bottom', 'riipay' ),
+              'type' => 'text',
+                'description' => __( 'Set the bottom margin of Riipay Logo in custom product price text', 'riipay' ),
+                'default' => 0,
+                'desc_tip'    => false,
             ),
 //            'surcharge_settings' => array(
 //                'title' => __( 'Surcharge Settings', 'riipay' ),

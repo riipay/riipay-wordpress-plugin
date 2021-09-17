@@ -7,7 +7,7 @@ function riipay_custom_price_html( $price_html, $product )
 {
     $settings = get_option('woocommerce_riipay_settings');
     $enabled = ( $settings['enabled'] === 'yes' );
-    $custom = isset( $settings['custom_product_price'] ) ?  ( $settings['custom_product_price'] === 'yes' ) : 'yes';
+    $custom = isset( $settings['custom_product_price'] ) ?  ( $settings['custom_product_price'] === 'yes' ) : true;
     if ( !$enabled || !$custom ) {
         return $price_html;
     }
@@ -34,12 +34,20 @@ function riipay_custom_price_html( $price_html, $product )
         ), $url . '/preview');
     $html = $price_html;
 
+    $instalmentCount = $settings['number_of_instalment'] ? (int) $settings['number_of_instalment'] : 3;
+    $showInstalmentPrice = $settings['show_split_price'] ? (bool) ( $settings['show_split_price'] === 'yes' ) : true;
     $logoVerticalAlign = $settings['logo_vertical_align'] ? $settings['logo_vertical_align'] : 'middle';
     $logoMarginBottom = $settings['logo_margin_bottom'] ? $settings['logo_margin_bottom'] : 0;
 
-    $html .= '<p style="font-size: 12px; font-weight: 400; margin-bottom: 0; line-height: 20px;">';
-    $html .= 'or 3 interest-free payments with ';
-    $html .= sprintf('<img src="%s" width="40px" style="all: unset; display: inline-block; vertical-align: %s; max-width: 40px; float: none; max-height: 20px; margin-bottom: %s">', 'https://secure.uat.riipay.my/images/logos/new/logo-purple-light.png', $logoVerticalAlign, $logoMarginBottom);
+    $instalmentPrice = number_format(round($product->get_price() / $instalmentCount, 2), 2, '.', '');
+    $html .= '<p class="riipay-product-widget" style="font-size: 12px; font-weight: 400; margin-bottom: 0; line-height: 20px;">';
+    if ($showInstalmentPrice) {
+        $html .= sprintf('or %s payments of <span style="font-weight: bold;">%s %s</span> with ', $instalmentCount, get_woocommerce_currency_symbol(), $instalmentPrice );
+    } else {
+        $html .= sprintf('or %s interest-free payments with ', $instalmentCount );
+    }
+
+    $html .= sprintf('<img src="%s" width="40px" style="all: unset; display: inline-block; vertical-align: %s; max-width: 40px; float: none; max-height: 20px; margin-bottom: %s">', 'https://firebasestorage.googleapis.com/v0/b/riipay-assets/o/logo%2Flogo-purple-light.png?alt=media&token=8fb76006-b822-4f94-ad3e-248813cc433b', $logoVerticalAlign, $logoMarginBottom);
     $html .= '</p><p style="font-size: 12px; font-weight: 400; margin-top: 0;">';
     $html .= sprintf('<a href="%s" onclick="window.open(\'%s\', \'popup\', \'width=600,height=700\'); return false;" target="popup" style="font-size: 12px; font-weight: 400; text-decoration: underline;">More info</a>', $url, $url);
     $html .= '</p>';

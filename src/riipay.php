@@ -133,6 +133,23 @@ class riipay extends WC_Payment_Gateway
                 'type' => 'checkbox',
                 'default' => 'yes',
             ),
+            'number_of_instalment' => array(
+                'title' => __( 'Number of Instalment', 'riipay' ),
+                'type' => 'select',
+                'description' => __( 'Set the number of instalment in custom product price text.', 'riipay' ),
+                'desc_tip' => false,
+                'default' => '3',
+                'options' => $this->get_instalment_count_options(),
+            ),
+            'show_split_price' => array(
+                'title' => __( 'Show Split Price', 'riipay' ),
+                'type' => 'select',
+                'description' => __( 'Show the split price in custom product price text. (Product price divided by number of instalment)', 'riipay' ),
+                'label' => __( 'Enable', 'riipay' ),
+                'desc_tip' => false,
+                'default' => 'yes',
+                'options' => $this->get_show_instalment_price_options(),
+            ),
             'logo_vertical_align' => array(
                 'title' => __( 'Riipay Logo Vertical Alignmt.', 'riipay' ),
                 'type' => 'select',
@@ -198,6 +215,27 @@ class riipay extends WC_Payment_Gateway
                 'description' => __( $extra_info_text , 'riipay' ),
             ),
         );
+    }
+
+    /**
+     * @return array
+     */
+    public function get_show_instalment_price_options()
+    {
+        return array(
+            'yes' => 'Yes ( or X payments of RM XXX with Riipay )',
+            'no' => 'No ( or X interest-free payments with Riipay )',
+        );
+    }
+
+    public function get_instalment_count_options()
+    {
+        $options = array();
+        foreach (range(2, 12) as $count) {
+            $options[$count] = $count;
+        }
+
+        return $options;
     }
 
     public function get_url()

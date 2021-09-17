@@ -2,8 +2,8 @@
 Contributors: riipay
 Tags: riipay, payment gateway, Malaysia, ecommerce, woocommerce
 Requires at least: 4.4
-Tested up to: 5.6
-Stable tag: 1.0.8
+Tested up to: 5.8
+Stable tag: 1.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,23 @@ Kindly contact Riipay customer service at contact@riipay.my.
 == Screenshots ==
 
 == Changelog ==
+
+= 1.0.13 =
+Added Instalment Count & Show Instalment Price Setting.
+Added custom class to product price text.
+
+= 1.0.12 =
+Bugfix
+
+= 1.0.11 =
+Make product instalment price bold.
+
+= 1.0.10 =
+Enhance product price display text by showing first instalment price.
+Support latest Wordpress version.
+
+= 1.0.9 =
+Support latest Wordpress and WooCommerce version.
 
 = 1.0.8 =
 Allow customisation for Riipay custom price logo position.

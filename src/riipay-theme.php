@@ -13,8 +13,8 @@ function riipay_custom_price_html( $price_html, $product )
     }
 
     //only visible to admin if under sandbox environment
-    $environment = isset($settings['environment']) ? $settings['environment'] : 'production';
-    if ( $environment === 'sandbox' && !current_user_can('administrator') ) {
+    $visibility = isset($settings['visibility']) ? $settings['visibility'] : 'all';
+    if ( $visibility === 'admin_only' && !current_user_can('administrator') ) {
         return $price_html;
     }
 

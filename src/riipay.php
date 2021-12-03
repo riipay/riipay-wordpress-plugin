@@ -127,6 +127,17 @@ class riipay extends WC_Payment_Gateway
                     'sandbox'	=> __( 'Sandbox', 'riipay' )
                 ),
             ),
+            'visibility' => array(
+                'title' => __( 'Visibility Control', 'riipay' ),
+                'type' => 'select',
+                'description' => __( 'Restrict this plugin to specific users.', 'riipay' ),
+                'default' => 'all',
+                'desc_tip'    => false,
+                'options'     => array(
+                    'all'	=> __( 'Visible to everyone', 'riipay' ),
+                    'admin_only'	=> __( 'Only visible to admins', 'riipay' )
+                ),
+            ),
             'custom_product_price' => array(
                 'title' => __( 'Enable Riipay Product Price', 'riipay' ),
                 'label' => __( 'Enable', 'riipay' ),
@@ -258,8 +269,8 @@ class riipay extends WC_Payment_Gateway
         }
 
         //only visible to admin if under sandbox environment
-        $environment = $this->get_option( 'environment', 'production' );
-        if ( $environment === 'sandbox' && !current_user_can('administrator') ) {
+        $visibility = $this->get_option( 'visibility', 'all' );
+        if ( $visibility === 'admin_only' && !current_user_can('administrator') ) {
             return false;
         }
 

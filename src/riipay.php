@@ -455,9 +455,9 @@ class riipay extends WC_Payment_Gateway
 
     public function check_response()
     {
-        $is_callback = $_REQUEST['callback'] == 1 ? true : false;
+        $is_callback = isset( $_GET['callback'] ) ? ( $_GET['callback'] == 1 ) : false;
         $method = strtoupper( $_SERVER['REQUEST_METHOD'] );
-        $content_type = $_SERVER['HTTP_CONTENT_TYPE'];
+        $content_type = $method !== 'GET' ? $_SERVER['CONTENT_TYPE'] : null;
 
         $data = [];
         if ( $method == 'GET' ) {

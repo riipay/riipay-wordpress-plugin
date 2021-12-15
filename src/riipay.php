@@ -501,22 +501,37 @@ class riipay extends WC_Payment_Gateway
 
     public function check_response()
     {
-        $is_callback = $this->is_callback();
-        $method = $this->get_call_method();
-        $content_type = $this->get_content_type();
+        $debug = ['logs' => [], 'message' => ''];
 
+        $debug['logs'][] = 'Trying to resolve callback flag';
+        $is_callback = $this->is_callback();
+
+        $debug['logs'][] = 'Trying to resolve METHOD';
+        $method = $this->get_call_method();
+        $debug['method'] = $method;
+
+        $debug['logs'][] = 'Trying to resolve CONTENT TYPE';
+        $content_type = $this->get_content_type();
+        $debug['content_type'] = $content_type;
+
+        $debug['logs'][] = 'Trying to resolve $data';
         $data = [];
         if ( $method == 'GET' ) {
             $data = $_GET;
+            $debug['data'] = $data;
         } elseif ( ( $method == 'POST' ) && ( strpos( $content_type, 'application/json' )  !== false ) ) {
             $json = file_get_contents('php://input');
             $data = json_decode($json, true);
+            $debug['data'] = $data;
         } elseif ( $method == 'POST' ) {
             $data = stripslashes_deep( $_POST );
+            $debug['data'] = $data;
         } else {
-            $this->output_log( sprintf( 'Error: Invalid request method: %s', $method ) );
+            $debug['message'] = sprintf( 'Error: Invalid request method: %s', $method );
+            $this->output_log( $debug );
         }
 
+        $debug['logs'][] = 'Trying to resolve status_code, status_message, signature, transaction_reference, reference, error_code, error_message from $data';
         $status_code = $this->get_value_from_array('status_code', $data);
         $status_message = $this->get_value_from_array('status_message', $data, true);
         $signature = $this->get_value_from_array('signature', $data);
@@ -527,14 +542,26 @@ class riipay extends WC_Payment_Gateway
 
         $order = null;
         try {
+            $debug['logs'][] = 'Trying to query WC_Order($reference)';
             $order = new WC_Order( $reference );
         } catch (Exception $e) {
-            $this->output_log( sprintf('Error: Order %s not found', $reference ), 404 );
+            $debug['message'] = sprintf('Error: Order %s not found', $reference );
+            $this->output_log( $debug, 404 );
         }
 
+        $debug['logs'][] = 'Trying to call $order->get_status()';
         $order_status = $order->get_status();
+        $debug['order'] = ['status' => $order_status];
+
 
         $note = $status_message . sprintf(' [%s]', $transaction_reference );
+
+        $status_code = strtoupper($status_code);
+        if ( !in_array( $status_code, ['A', 'S', 'F'] ) ) {
+            $debug['message'] = sprintf('Error: Invalid Status Code: %s', $status_code );
+            $this->output_log( $debug );
+        }
+
 
         if ( !in_array( strtolower($order_status), array( 'processing', 'completed', 'refunded' ) ) ) {
             if ( $status_code == 'F') {
@@ -556,22 +583,35 @@ class riipay extends WC_Payment_Gateway
                     '504',
                 );
 
+                $debug['logs'][] = 'Trying to call $order->add_order_note()';
                 $order->add_order_note(__($error_code . ': ' . $error_message, 'riipay'), 1);
                 if ( !in_array($error_code, $skip) ) {
+                    $debug['logs'][] = 'Trying to call $order->update_status(failed)';
                     $order->update_status('failed', __($note, 'riipay'), 1);
                 } elseif ( $error_code === '410' ) {
+                    $debug['logs'][] = '$error_code = 410, wp_redirect($order->get_checkout_payment_url())';
                     wp_redirect($order->get_checkout_payment_url());
                     exit();
                 }
-            } elseif ( in_array( $status_code, ['A', 'S'] ) ) {
+            } else {
                 //check if signature is valid
+                $debug['logs'][] = 'Trying to call $order->get_option(merchant_code)';
                 $merchant_code = $this->get_option('merchant_code');
+                $debug['logs'][] = 'Trying to call $order->get_option(secret_key)';
                 $secret_key = $this->get_option('secret_key');
+                $debug['logs'][] = 'Trying to call $order->get_order_number()';
                 $order_reference = $order->get_order_number();
+                $debug['logs'][] = 'Trying to call $order->get_currency()';
                 $currency_code = $order->get_currency();
+                $debug['logs'][] = 'Trying to call $order->get_total()';
                 $amount = number_format($order->get_total(), 2, '.', '');
 
-                $order_signature = md5($merchant_code . $secret_key . $order_reference . $currency_code . $amount . $transaction_reference . $status_code);
+                $signature_source = $merchant_code . $secret_key . $order_reference . $currency_code . $amount . $transaction_reference . $status_code;
+                $order_signature = md5($signature_source);
+
+                $debug['logs'][] = 'Trying to verify signature...';
+                $debug['logs'][] = ' - Source: ' . $signature_source;
+                $debug['logs'][] = ' - Expecting: ' . $order_signature;
 
                 $valid = ($order_signature === $signature);
                 if (!$valid) {
@@ -597,7 +637,8 @@ class riipay extends WC_Payment_Gateway
         }
 
         if ( $is_callback ) {
-            $this->output_log('OK', 200);
+            $debug['message'] = 'OK';
+            $this->output_log($debug, 200);
         } else {
             wp_redirect( $order->get_checkout_order_received_url() );
         }

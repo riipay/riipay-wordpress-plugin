@@ -177,20 +177,20 @@ class riipay extends WC_Payment_Gateway
                 ),
             ),
             'logo_margin_bottom' => array(
-              'title' => __( 'Riipay Logo Margin Bottom', 'riipay' ),
-              'type' => 'select',
-              'description' => __( 'Set the bottom margin of Riipay Logo in custom product price text', 'riipay' ),
-              'desc_tip'    => false,
-              'default' => '0px',
-              'options'     => array(
-                '3px'	=> __( '3px', 'riipay' ),
-                '2px'	=> __( '2px', 'riipay' ),
-                '1px'	=> __( '1px', 'riipay' ),
-                '0px'	=> __( '0px', 'riipay' ),
-                '-1px'	=> __( '-1px', 'riipay' ),
-                '-2px'	=> __( '-2px', 'riipay' ),
-                '-3px'	=> __( '-3px', 'riipay' ),
-              ),
+                'title' => __( 'Riipay Logo Margin Bottom', 'riipay' ),
+                'type' => 'select',
+                'description' => __( 'Set the bottom margin of Riipay Logo in custom product price text', 'riipay' ),
+                'desc_tip'    => false,
+                'default' => '0px',
+                'options'     => array(
+                    '3px'	=> __( '3px', 'riipay' ),
+                    '2px'	=> __( '2px', 'riipay' ),
+                    '1px'	=> __( '1px', 'riipay' ),
+                    '0px'	=> __( '0px', 'riipay' ),
+                    '-1px'	=> __( '-1px', 'riipay' ),
+                    '-2px'	=> __( '-2px', 'riipay' ),
+                    '-3px'	=> __( '-3px', 'riipay' ),
+                ),
             ),
 //            'surcharge_settings' => array(
 //                'title' => __( 'Surcharge Settings', 'riipay' ),
@@ -453,9 +453,40 @@ class riipay extends WC_Payment_Gateway
         );
     }
 
+    public function is_callback()
+    {
+        return isset( $_GET['callback'] ) ? ( $_GET['callback'] == 1 ) : false;
+    }
+
+    public function output_log( $text, $status_code = 400 )
+    {
+        if ( $this->is_callback() ) {
+            $success = $status_code === 200;
+            if ( !$success ) {
+                wp_send_json_error($text, $status_code);
+            } else {
+                wp_send_json_success($text);
+            }
+        }
+    }
+
+    public function get_value_from_array( $key, $array, $nullable = false )
+    {
+        if ( !is_array( $array ) ) {
+            $this->output_log( 'Error: Response is not an array' );
+        }
+
+        $value = $array[$key] ?? null;
+        if ( !$nullable && empty( $value ) ) {
+            $this->output_log( sprintf( 'Error: Key %s not found', $key ), 404 );
+        }
+
+        return trim( sanitize_text_field( $value ) );
+    }
+
     public function check_response()
     {
-        $is_callback = isset( $_GET['callback'] ) ? ( $_GET['callback'] == 1 ) : false;
+        $is_callback = $this->is_callback();
         $method = strtoupper( $_SERVER['REQUEST_METHOD'] );
         $content_type = $method !== 'GET' ? $_SERVER['CONTENT_TYPE'] : null;
 
@@ -467,17 +498,25 @@ class riipay extends WC_Payment_Gateway
             $data = json_decode($json, true);
         } elseif ( $method == 'POST' ) {
             $data = stripslashes_deep( $_POST );
+        } else {
+            $this->output_log( sprintf( 'Error: Invalid request method: %s', $method ) );
         }
 
-        $status_code = trim( sanitize_text_field( $data['status_code'] ) );
-        $status_message = trim( sanitize_text_field( $data['status_message'] ) );
-        $signature = trim( sanitize_text_field( $data['signature'] ) );
-        $transaction_reference = trim( sanitize_text_field( $data['transaction_reference'] ) );
-        $reference = trim( sanitize_text_field( $data['reference'] ) );
-        $error_code = trim( sanitize_text_field( $data['error_code'] ) );
-        $error_message = trim( sanitize_text_field( $data['error_message'] ) );
+        $status_code = $this->get_value_from_array('status_code', $data);
+        $status_message = $this->get_value_from_array('status_message', $data, true);
+        $signature = $this->get_value_from_array('signature', $data);
+        $transaction_reference = $this->get_value_from_array('transaction_reference', $data);
+        $reference = $this->get_value_from_array('reference', $data);
+        $error_code = $this->get_value_from_array('error_code', $data, true);
+        $error_message = $this->get_value_from_array('error_message', $data, true);
 
-        $order = new WC_Order( $reference );
+        $order = null;
+        try {
+            $order = new WC_Order( $reference );
+        } catch (Exception $e) {
+            $this->output_log( sprintf('Error: Order %s not found', $reference ), 404 );
+        }
+
         $order_status = $order->get_status();
 
         $note = $status_message . sprintf(' [%s]', $transaction_reference );
@@ -523,6 +562,7 @@ class riipay extends WC_Payment_Gateway
                 if (!$valid) {
 //                    $order->update_status( 'failed' );
                     $order->add_order_note(__('Invalid Signature.', 'riipay'));
+                    $this->output_log('Invalid signature.');
 
                     if (!$is_callback) {
                         wc_add_notice(__('An error occurred. Please contact store owner if this problem persists.', 'riipay'), 'error');
@@ -542,7 +582,7 @@ class riipay extends WC_Payment_Gateway
         }
 
         if ( $is_callback ) {
-            echo 'OK';
+            $this->output_log('OK', 200);
         } else {
             wp_redirect( $order->get_checkout_order_received_url() );
         }

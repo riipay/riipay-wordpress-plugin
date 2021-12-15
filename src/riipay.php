@@ -485,15 +485,19 @@ class riipay extends WC_Payment_Gateway
         }
     }
 
-    public function get_value_from_array( $key, $array, $nullable = false )
+    public function get_value_from_array( &$debug, $key, $array, $nullable = false )
     {
+        $debug['logs'][] = sprintf( 'Trying to resolve %s from $data', $key );
+
         if ( !is_array( $array ) ) {
-            $this->output_log( 'Error: Response is not an array' );
+            $debug['message'] = 'Error: Response is not an array';
+            $this->output_log( $debug );
         }
 
         $value = $array[$key] ?? null;
         if ( !$nullable && empty( $value ) ) {
-            $this->output_log( sprintf( 'Error: Key %s not found', $key ), 404 );
+            $debug['message'] = sprintf( 'Error: Key %s not found', $key );
+            $this->output_log( $debug, 404 );
         }
 
         return trim( sanitize_text_field( $value ) );
@@ -531,14 +535,13 @@ class riipay extends WC_Payment_Gateway
             $this->output_log( $debug );
         }
 
-        $debug['logs'][] = 'Trying to resolve status_code, status_message, signature, transaction_reference, reference, error_code, error_message from $data';
-        $status_code = $this->get_value_from_array('status_code', $data);
-        $status_message = $this->get_value_from_array('status_message', $data, true);
-        $signature = $this->get_value_from_array('signature', $data);
-        $transaction_reference = $this->get_value_from_array('transaction_reference', $data);
-        $reference = $this->get_value_from_array('reference', $data);
-        $error_code = $this->get_value_from_array('error_code', $data, true);
-        $error_message = $this->get_value_from_array('error_message', $data, true);
+        $status_code = $this->get_value_from_array($debug, 'status_code', $data);
+        $status_message = $this->get_value_from_array($debug, 'status_message', $data, true);
+        $signature = $this->get_value_from_array($debug,'signature', $data);
+        $transaction_reference = $this->get_value_from_array($debug, 'transaction_reference', $data);
+        $reference = $this->get_value_from_array($debug, 'reference', $data);
+        $error_code = $this->get_value_from_array($debug, 'error_code', $data, true);
+        $error_message = $this->get_value_from_array($debug, 'error_message', $data, true);
 
         $order = null;
         try {
@@ -617,7 +620,9 @@ class riipay extends WC_Payment_Gateway
                 if (!$valid) {
 //                    $order->update_status( 'failed' );
                     $order->add_order_note(__('Invalid Signature.', 'riipay'));
-                    $this->output_log('Invalid signature.');
+
+                    $debug['message'] = 'Invalid signature.';
+                    $this->output_log($debug);
 
                     if (!$is_callback) {
                         wc_add_notice(__('An error occurred. Please contact store owner if this problem persists.', 'riipay'), 'error');

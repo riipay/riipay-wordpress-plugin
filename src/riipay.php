@@ -458,6 +458,21 @@ class riipay extends WC_Payment_Gateway
         return isset( $_GET['callback'] ) ? ( $_GET['callback'] == 1 ) : false;
     }
 
+    public function get_call_method()
+    {
+        return isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( $_SERVER['REQUEST_METHOD'] ) : 'GET';
+    }
+
+    public function get_content_type()
+    {
+        $method = $this->get_call_method();
+        if ($method !== 'GET') {
+            return isset( $_SERVER['CONTENT_TYPE'] ) ? $_SERVER['CONTENT_TYPE'] : null;
+        }
+
+        return null;
+    }
+
     public function output_log( $text, $status_code = 400 )
     {
         if ( $this->is_callback() ) {
@@ -487,8 +502,8 @@ class riipay extends WC_Payment_Gateway
     public function check_response()
     {
         $is_callback = $this->is_callback();
-        $method = strtoupper( $_SERVER['REQUEST_METHOD'] );
-        $content_type = $method !== 'GET' ? $_SERVER['CONTENT_TYPE'] : null;
+        $method = $this->get_call_method();
+        $content_type = $this->get_content_type();
 
         $data = [];
         if ( $method == 'GET' ) {
@@ -548,7 +563,7 @@ class riipay extends WC_Payment_Gateway
                     wp_redirect($order->get_checkout_payment_url());
                     exit();
                 }
-            } else {
+            } elseif ( in_array( $status_code, ['A', 'S'] ) ) {
                 //check if signature is valid
                 $merchant_code = $this->get_option('merchant_code');
                 $secret_key = $this->get_option('secret_key');

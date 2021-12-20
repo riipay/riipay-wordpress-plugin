@@ -292,7 +292,6 @@ class riipay extends WC_Payment_Gateway
 
     public function validate_admin_input()
     {
-
         $valid = true;
         if ( empty( $this->get_option( 'merchant_code' ) ) ) {
             add_action('admin_notices', array(
@@ -365,7 +364,11 @@ class riipay extends WC_Payment_Gateway
         if ( is_wc_endpoint_url( 'order-pay' ) ) {
             $order_id = get_query_var('order-pay');
             $order = new WC_Order( $order_id );
-            $total = $order->get_total();
+
+            if ( $order instanceof WC_Order ) {
+                $total = $order->get_total();
+            }
+
         } elseif ( $woocommerce->cart  ) {
             $total = $woocommerce->cart->get_total('') ;
         }
@@ -453,6 +456,15 @@ class riipay extends WC_Payment_Gateway
         );
     }
 
+    public function get_current_version()
+    {
+        if ( defined( 'RIIPAY_CURRENT_VERSION' ) ) {
+            return constant( 'RIIPAY_CURRENT_VERSION' );
+        }
+
+        return null;
+    }
+
     public function is_callback()
     {
         return isset( $_GET['callback'] ) ? ( $_GET['callback'] == 1 ) : false;
@@ -505,7 +517,7 @@ class riipay extends WC_Payment_Gateway
 
     public function check_response()
     {
-        $debug = ['logs' => [], 'message' => ''];
+        $debug = ['version' => $this->get_current_version(), 'logs' => [], 'message' => ''];
 
         $debug['logs'][] = 'Trying to resolve callback flag';
         $is_callback = $this->is_callback();
@@ -663,13 +675,11 @@ class riipay extends WC_Payment_Gateway
 
     protected function adjust_stock( $order, $operation )
     {
-        if ( is_a( $order, 'WC_Order' ) ) {
-            $order_id = $order->get_id();
-        } else {
+        if ( $order && !$order instanceof WC_Order) {
             $order = wc_get_order( $order );
         }
 
-        if ( get_option('woocommerce_manage_stock') !== 'yes' || $order->get_item_count() <= 0 ) {
+        if ( !$order instanceof WC_Order || get_option('woocommerce_manage_stock') !== 'yes' || $order->get_item_count() <= 0 ) {
             return;
         }
 
@@ -744,16 +754,18 @@ class riipay extends WC_Payment_Gateway
 
     public function woo_change_order_received_text( $text, $order)
     {
-        if ( $order->has_status( 'on-hold' ) ) {
-            $new_text = $text;
-            $new_text .= '<br />You current order status is On Hold. Please note that the payment status will take some time to update.';
-            return $new_text;
-        } elseif ( $order->has_status( 'pending' ) || $order->has_status( 'unpaid' ) ) {
-            $new_text = $text;
-            $new_text .= '<br />Kindly make payment so that we can process your order as soon as possible.';
-            $new_text .= '<br/>';
-            $new_text .= sprintf( '<a href="%s" class="button pay">Pay</a>', $order->get_checkout_payment_url() );
-            return $new_text;
+        if ( $order instanceof WC_Order ) {
+            if ( $order->has_status( 'on-hold' ) ) {
+                $new_text = $text;
+                $new_text .= '<br />You current order status is On Hold. Please note that the payment status will take some time to update.';
+                return $new_text;
+            } elseif ( $order->has_status( 'pending' ) || $order->has_status( 'unpaid' ) ) {
+                $new_text = $text;
+                $new_text .= '<br />Kindly make payment so that we can process your order as soon as possible.';
+                $new_text .= '<br/>';
+                $new_text .= sprintf( '<a href="%s" class="button pay">Pay</a>', $order->get_checkout_payment_url() );
+                return $new_text;
+            }
         }
 
         return $text;

@@ -27,6 +27,7 @@ class Woocommerce_Riipay {
         add_action( 'admin_notices', array( $this, 'admin_notices' ), 15);
 
         add_action( 'plugins_loaded', array( $this, 'riipay_init') );
+        add_action( 'plugins_loaded', array( $this, 'get_current_plugin_version') );
         add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'riipay_links'));
         add_filter( 'woocommerce_payment_gateways', array( $this, 'add_riipay') );
     }
@@ -121,6 +122,13 @@ class Woocommerce_Riipay {
             'class' => $class,
             'message' => $message,
         );
+    }
+
+    public function get_current_plugin_version()
+    {
+        $plugin_data = get_file_data(__FILE__, array('Version' => 'Version'), false);
+        $plugin_version = $plugin_data['Version'];
+        define('RIIPAY_CURRENT_VERSION', $plugin_version);
     }
 
     public function admin_notices()

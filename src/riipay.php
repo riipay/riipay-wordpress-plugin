@@ -412,8 +412,8 @@ class riipay extends WC_Payment_Gateway
     {
         $order = new WC_Order( $order_id );
         $merchant_code = $this->get_option( 'merchant_code' );
-        $reference = $order->get_order_number();
-        $description = 'Payment for order ' . $reference;
+        $reference = $order_id;
+        $description = 'Payment for order ' . $order->get_order_number();
         $currency_code = $order->get_currency();
         $amount = number_format( $order->get_total(), 2, '.', '' );
         $customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
@@ -614,14 +614,14 @@ class riipay extends WC_Payment_Gateway
                 $merchant_code = $this->get_option('merchant_code');
                 $debug['logs'][] = 'Trying to call $order->get_option(secret_key)';
                 $secret_key = $this->get_option('secret_key');
-                $debug['logs'][] = 'Trying to call $order->get_order_number()';
-                $order_reference = $order->get_order_number();
+                $debug['logs'][] = 'Trying to call $order->get_id()';
+                $order_id = $order->get_id();
                 $debug['logs'][] = 'Trying to call $order->get_currency()';
                 $currency_code = $order->get_currency();
                 $debug['logs'][] = 'Trying to call $order->get_total()';
                 $amount = number_format($order->get_total(), 2, '.', '');
 
-                $signature_source = $merchant_code . $secret_key . $order_reference . $currency_code . $amount . $transaction_reference . $status_code;
+                $signature_source = $merchant_code . $secret_key . $order_id . $currency_code . $amount . $transaction_reference . $status_code;
                 $order_signature = md5($signature_source);
 
                 $debug['logs'][] = 'Trying to verify signature...';

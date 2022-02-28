@@ -161,6 +161,20 @@ class riipay extends WC_Payment_Gateway
                 'default' => 'yes',
                 'options' => $this->get_show_instalment_price_options(),
             ),
+            'min_product_price' => array(
+                'title' => __( 'Minimum Product Price', 'riipay' ),
+                'type' => 'text',
+                'description' => __( 'Minimum product price to show custom product price text', 'riipay' ),
+                'desc_tip' => false,
+                'default' => 0,
+            ),
+            'max_product_price' => array(
+                'title' => __( 'Maximum Product Price', 'riipay' ),
+                'type' => 'text',
+                'description' => __( 'Maximum product price to show custom product price text', 'riipay' ),
+                'desc_tip' => false,
+                'default' => 9999,
+            ),
             'logo_vertical_align' => array(
                 'title' => __( 'Riipay Logo Vertical Alignmt.', 'riipay' ),
                 'type' => 'select',

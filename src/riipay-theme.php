@@ -23,6 +23,14 @@ function riipay_custom_price_html( $price_html, $product )
         return $price_html;
     }
 
+    //check if product price is within price range
+    $productPrice = $product->get_price();
+    $minProductPrice = isset($settings['min_product_price']) ? $settings['min_product_price'] : 0;
+    $maxProductPrice = isset($settings['max_product_price']) && $settings['max_product_price'] ? $settings['max_product_price'] : 9999;
+    if ($productPrice < $minProductPrice || $productPrice > $maxProductPrice) {
+        return $price_html;
+    }
+
     $url = riipay::PRODUCTION_URL;
     $environment = $settings['environment'];
     if ( $environment === 'sandbox' ) {

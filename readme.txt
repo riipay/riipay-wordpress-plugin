@@ -2,8 +2,8 @@
 Contributors: riipay
 Tags: riipay, payment gateway, Malaysia, ecommerce, woocommerce
 Requires at least: 4.4
-Tested up to: 5.9
-Stable tag: 1.0.19
+Tested up to: 6.4
+Stable tag: 1.0.20
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,9 @@ Kindly contact Riipay customer service at contact@riipay.my.
 == Screenshots ==
 
 == Changelog ==
+
+= 1.0.20 =
+Implemented support for High-Performance Order Storage.
 
 = 1.0.19 =
 Added Minimum Product Price & Maximum Product Price Setting to show product price text.
